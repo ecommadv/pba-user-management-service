@@ -17,7 +17,7 @@ CREATE TABLE IF NOT EXISTS pending_user (
     PRIMARY KEY (id)
 );
 
-CREATE TABLE IF NOT EXISTS user_profile (
+CREATE TABLE IF NOT EXISTS active_user_profile (
     id bigint NOT NULL,
     firstname character varying NOT NULL,
     lastname character varying NOT NULL,
@@ -31,7 +31,19 @@ CREATE TABLE IF NOT EXISTS user_profile (
     PRIMARY KEY (id)
 );
 
-CREATE TABLE IF NOT EXISTS "group" (
+CREATE TABLE IF NOT EXISTS pending_user_profile (
+    id bigint NOT NULL,
+    firstname character varying NOT NULL,
+    lastname character varying NOT NULL,
+    email character varying NOT NULL,
+    user_id bigint NOT NULL,
+    CONSTRAINT fk_user
+        FOREIGN KEY (user_id)
+            REFERENCES pending_user(id),
+    PRIMARY KEY (id)
+);
+
+CREATE TABLE IF NOT EXISTS group_type (
     id bigint NOT NULL,
     name character varying NOT NULL,
     uid uuid NOT NULL,
@@ -57,6 +69,6 @@ CREATE TABLE IF NOT EXISTS group_member (
             REFERENCES user_type(id),
     CONSTRAINT fk_group_id
         FOREIGN KEY (group_id)
-            REFERENCES "group"(id),
+            REFERENCES group_type(id),
     PRIMARY KEY (id)
 );
