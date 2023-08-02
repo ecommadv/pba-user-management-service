@@ -52,7 +52,7 @@ public abstract class JdbcRepository<ObjectT, IdT> {
         return jdbcTemplate.query(sql, rowMapper);
     }
 
-    public ObjectT deleteById(IdT id) throws AuthDaoException, IllegalAccessException {
+    public ObjectT deleteById(IdT id) throws AuthDaoException {
         Optional<ObjectT> obj = getById(id);
         if (obj.isEmpty()) {
             throw new AuthDaoException(String.format("Object with id %s is not stored!", id.toString()));
@@ -62,7 +62,7 @@ public abstract class JdbcRepository<ObjectT, IdT> {
         return obj.get();
     }
 
-    public ObjectT update(ObjectT obj, IdT id) throws AuthDaoException, IllegalAccessException {
+    public ObjectT update(ObjectT obj, IdT id) throws AuthDaoException {
         Optional<ObjectT> objFound = getById(id);
         if (objFound.isEmpty()) {
             throw new AuthDaoException(String.format("Object with id %s is not stored!", id.toString()));

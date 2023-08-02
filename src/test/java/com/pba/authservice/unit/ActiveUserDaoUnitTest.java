@@ -4,34 +4,28 @@ import com.pba.authservice.exceptions.AuthDaoException;
 import com.pba.authservice.mockgenerators.ActiveUserMockGenerator;
 import com.pba.authservice.persistance.model.ActiveUser;
 import com.pba.authservice.persistance.repository.ActiveUserDao;
+import com.pba.authservice.persistance.repository.ActiveUserDaoImpl;
 import com.pba.authservice.persistance.repository.mappers.ActiveUserRowMapper;
 import com.pba.authservice.persistance.repository.sql.ActiveUserSqlProvider;
-import org.checkerframework.checker.units.qual.A;
-import org.junit.Before;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.function.Supplier;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-public class ActiveUserDaoUnitTest {
+public class ActiveUserDaoUnitTest implements BaseDaoUnitTest {
     @InjectMocks
-    private ActiveUserDao activeUserDao;
+    private ActiveUserDaoImpl activeUserDao;
 
     @Mock
     private ActiveUserSqlProvider activeUserSqlProvider;
@@ -42,27 +36,11 @@ public class ActiveUserDaoUnitTest {
     @Mock
     private JdbcTemplate jdbcTemplate;
 
-    private ActiveUserMockGenerator activeUserMockGenerator;
-
-    @BeforeEach
-    public void setUp() {
-        activeUserMockGenerator = new ActiveUserMockGenerator();
-    }
-
-    private void setUpGetByUid(ActiveUser activeUser) {
-        when(activeUserSqlProvider.selectById()).thenReturn("select");
-        when(jdbcTemplate.query("select", activeUserRowMapper, activeUser.getUid())).thenReturn(List.of(activeUser));
-    }
-
-    private void setUpEmptyGetByUid(UUID uid) {
-        when(activeUserSqlProvider.selectById()).thenReturn("select");
-        when(jdbcTemplate.query("select", activeUserRowMapper, uid)).thenReturn(List.of());
-    }
-
     @Test
-    public void testSaveActiveUser() {
+    @Override
+    public void testSave() {
         // given
-        ActiveUser activeUser = activeUserMockGenerator.generateMockActiveUser();
+        ActiveUser activeUser = ActiveUserMockGenerator.generateMockActiveUser();
         this.setUpGetByUid(activeUser);
         when(jdbcTemplate.query("select", activeUserRowMapper, activeUser.getUid())).thenReturn(List.of(activeUser));
 
@@ -74,9 +52,10 @@ public class ActiveUserDaoUnitTest {
     }
 
     @Test
-    public void testGetPresentActiveUserByUid() {
+    @Override
+    public void testGetPresentById() {
         // given
-        ActiveUser activeUser = activeUserMockGenerator.generateMockActiveUser();
+        ActiveUser activeUser = ActiveUserMockGenerator.generateMockActiveUser();
         this.setUpGetByUid(activeUser);
 
         // when
@@ -87,7 +66,8 @@ public class ActiveUserDaoUnitTest {
     }
 
     @Test
-    public void testGetAbsentActiveUserByUid() {
+    @Override
+    public void testGetAbsentById() {
         // given
         UUID absentUid = UUID.randomUUID();
         this.setUpEmptyGetByUid(absentUid);
@@ -100,9 +80,10 @@ public class ActiveUserDaoUnitTest {
     }
 
     @Test
-    public void testGetAllActiveUsers() {
+    @Override
+    public void testGetAll() {
         // given
-        List<ActiveUser> activeUserList = activeUserMockGenerator.generateMockListOfActiveUsers(10);
+        List<ActiveUser> activeUserList = ActiveUserMockGenerator.generateMockListOfActiveUsers(10);
         when(activeUserSqlProvider.selectAll()).thenReturn("select");
         when(jdbcTemplate.query("select", activeUserRowMapper)).thenReturn(activeUserList);
 
@@ -114,9 +95,10 @@ public class ActiveUserDaoUnitTest {
     }
 
     @Test
-    public void testDeletePresentActiveUserByUid() throws AuthDaoException {
+    @Override
+    public void testDeletePresentById() throws AuthDaoException {
         // given
-        ActiveUser activeUser = activeUserMockGenerator.generateMockActiveUser();
+        ActiveUser activeUser = ActiveUserMockGenerator.generateMockActiveUser();
         when(activeUserSqlProvider.deleteById()).thenReturn("delete");
         this.setUpGetByUid(activeUser);
 
@@ -128,52 +110,54 @@ public class ActiveUserDaoUnitTest {
     }
 
     @Test
-    public void testDeleteAbsentActiveUserByUid() {
-        // given
+    @Override
+    public void testDeleteAbsentById() {
         UUID uid = UUID.randomUUID();
         this.setUpEmptyGetByUid(uid);
 
-        try {
-            // when
-            activeUserDao.deleteById(uid);
-            Assertions.fail();
-        }
-        catch(AuthDaoException authDaoException) {
-            // then
-            Assertions.assertEquals(String.format("Object with id %s is not stored!", uid.toString()), authDaoException.getMessage());
-        }
+        assertThatThrownBy(() -> activeUserDao.deleteById(uid))
+                .isInstanceOf(AuthDaoException.class)
+                .hasMessage(String.format("Object with id %s is not stored!", uid.toString()));
     }
 
     @Test
-    public void testUpdatePresentActiveUser() throws AuthDaoException {
+    @Override
+    public void testUpdatePresent() throws AuthDaoException {
         // given
-        ActiveUser activeUser = activeUserMockGenerator.generateMockActiveUser();
-        ActiveUser newActiveUser = activeUserMockGenerator.generateMockActiveUser();
+        ActiveUser activeUser = ActiveUserMockGenerator.generateMockActiveUser();
+        ActiveUser newActiveUser = ActiveUserMockGenerator.generateMockActiveUser();
+        newActiveUser.setUid(activeUser.getUid());
         this.setUpGetByUid(activeUser);
         when(activeUserSqlProvider.update()).thenReturn("update");
 
         // when
-        ActiveUser result = activeUserDao.update(newActiveUser, activeUser.getUid());
+        ActiveUser result = activeUserDao.update(newActiveUser);
 
         // then
         Assertions.assertEquals(newActiveUser, result);
     }
 
     @Test
-    public void testUpdateAbsentActiveUser() {
+    @Override
+    public void testUpdateAbsent() {
         // given
         UUID uid = UUID.randomUUID();
-        ActiveUser absentActiveUser = activeUserMockGenerator.generateMockActiveUser();
+        ActiveUser absentActiveUser = ActiveUserMockGenerator.generateMockActiveUser();
+        absentActiveUser.setUid(uid);
         this.setUpEmptyGetByUid(uid);
 
-        try {
-            // when
-            activeUserDao.update(absentActiveUser, uid);
-            Assertions.fail();
-        }
-        catch(AuthDaoException authDaoException) {
-            // then
-            Assertions.assertEquals(String.format("Object with id %s is not stored!", uid.toString()), authDaoException.getMessage());
-        }
+        assertThatThrownBy(() -> activeUserDao.update(absentActiveUser))
+                .isInstanceOf(AuthDaoException.class)
+                .hasMessage(String.format("Object with id %s is not stored!", uid.toString()));
+    }
+
+    private void setUpGetByUid(ActiveUser activeUser) {
+        when(activeUserSqlProvider.selectById()).thenReturn("select");
+        when(jdbcTemplate.query("select", activeUserRowMapper, activeUser.getUid())).thenReturn(List.of(activeUser));
+    }
+
+    private void setUpEmptyGetByUid(UUID uid) {
+        when(activeUserSqlProvider.selectById()).thenReturn("select");
+        when(jdbcTemplate.query("select", activeUserRowMapper, uid)).thenReturn(List.of());
     }
 }

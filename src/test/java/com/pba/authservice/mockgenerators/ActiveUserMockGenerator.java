@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class ActiveUserMockGenerator {
-    public ActiveUser generateMockActiveUser() {
+    public static ActiveUser generateMockActiveUser() {
         return ActiveUser.builder()
                 .id(new Random().nextLong())
                 .uid(UUID.randomUUID())
@@ -23,8 +23,8 @@ public class ActiveUserMockGenerator {
                 .build();
     }
 
-    public List<ActiveUser> generateMockListOfActiveUsers(int size) {
-        return Stream.generate(this::generateMockActiveUser)
+    public static List<ActiveUser> generateMockListOfActiveUsers(int size) {
+        return Stream.generate(ActiveUserMockGenerator::generateMockActiveUser)
                 .limit(size)
                 .collect(Collectors.toList());
     }

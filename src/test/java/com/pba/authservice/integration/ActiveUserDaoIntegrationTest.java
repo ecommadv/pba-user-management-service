@@ -4,9 +4,9 @@ import com.pba.authservice.exceptions.AuthDaoException;
 import com.pba.authservice.mockgenerators.ActiveUserMockGenerator;
 import com.pba.authservice.persistance.model.ActiveUser;
 import com.pba.authservice.persistance.repository.ActiveUserDao;
+import com.pba.authservice.persistance.repository.ActiveUserDaoImpl;
 import jakarta.validation.constraints.NotNull;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -16,6 +16,7 @@ import org.springframework.test.context.jdbc.Sql;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
+import static org.assertj.core.api.Assertions.*;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -25,35 +26,20 @@ import java.util.stream.Collectors;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
 @Testcontainers
 @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:/cleanup.sql")
-public class ActiveUserDaoIntegrationTest {
+public class ActiveUserDaoIntegrationTest implements BaseDaoIntegrationTest {
     @Autowired
     private ActiveUserDao activeUserDao;
-    private ActiveUserMockGenerator activeUserMockGenerator;
-
-    @Container
-    private static PostgreSQLContainer postgreSQLContainer = new PostgreSQLContainer("postgres:15")
-            .withDatabaseName("testdb")
-            .withUsername("postgres")
-            .withPassword("larlarlar");
-
-    static {
-        postgreSQLContainer.withInitScript("schema.sql");
-    }
 
     @DynamicPropertySource
     public static void overrideProps(@NotNull DynamicPropertyRegistry dynamicPropertyRegistry) {
         dynamicPropertyRegistry.add("spring.datasource.url", postgreSQLContainer::getJdbcUrl);
     }
 
-    @BeforeEach
-    public void setUp() {
-        activeUserMockGenerator = new ActiveUserMockGenerator();
-    }
-
     @Test
-    public void testSaveActiveUser() throws IllegalAccessException {
+    @Override
+    public void testSave() {
         // given
-        ActiveUser activeUser = activeUserMockGenerator.generateMockActiveUser();
+        ActiveUser activeUser = ActiveUserMockGenerator.generateMockActiveUser();
 
         // when
         ActiveUser result = activeUserDao.save(activeUser);
@@ -61,20 +47,11 @@ public class ActiveUserDaoIntegrationTest {
         // then
         Assertions.assertEquals(activeUser.getUid(), result.getUid());
     }
-
-    private void addMockListOfActiveUsers(List<ActiveUser> activeUserList) throws IllegalAccessException {
-        for (ActiveUser activeUser : activeUserList) {
-            activeUserDao.save(activeUser);
-        }
-    }
-
-    private List<UUID> extractUids(List<ActiveUser> activeUserList) {
-        return activeUserList.stream().map((activeUser -> activeUser.getUid())).collect(Collectors.toList());
-    }
     @Test
-    public void testGetAllActiveUsers() throws IllegalAccessException {
+    @Override
+    public void testGetAll() {
         // given
-        List<ActiveUser> activeUserList = activeUserMockGenerator.generateMockListOfActiveUsers(10);
+        List<ActiveUser> activeUserList = ActiveUserMockGenerator.generateMockListOfActiveUsers(10);
         this.addMockListOfActiveUsers(activeUserList);
         List<UUID> activeUsersUids = this.extractUids(activeUserList);
 
@@ -87,9 +64,10 @@ public class ActiveUserDaoIntegrationTest {
     }
 
     @Test
-    public void testGetPresentActiveUserByUid() throws IllegalAccessException {
+    @Override
+    public void testGetPresentById() {
         // given
-        ActiveUser activeUser = activeUserMockGenerator.generateMockActiveUser();
+        ActiveUser activeUser = ActiveUserMockGenerator.generateMockActiveUser();
         activeUserDao.save(activeUser);
 
         // when
@@ -100,7 +78,8 @@ public class ActiveUserDaoIntegrationTest {
     }
 
     @Test
-    public void testGetEmptyActiveUserByUid() throws IllegalAccessException {
+    @Override
+    public void testGetAbsentById() {
         // given
         UUID uid = UUID.randomUUID();
 
@@ -112,9 +91,10 @@ public class ActiveUserDaoIntegrationTest {
     }
 
     @Test
-    public void testDeletePresentActiveUserByUid() throws AuthDaoException, IllegalAccessException {
+    @Override
+    public void testDeletePresentById() {
         // given
-        ActiveUser activeUser = activeUserMockGenerator.generateMockActiveUser();
+        ActiveUser activeUser = ActiveUserMockGenerator.generateMockActiveUser();
         activeUserDao.save(activeUser);
 
         // when
@@ -126,31 +106,26 @@ public class ActiveUserDaoIntegrationTest {
     }
 
     @Test
-    public void testDeleteEmptyActiveUserByUid() throws IllegalAccessException {
-        // given
+    @Override
+    public void testDeleteAbsentById() {
         UUID uid = UUID.randomUUID();
 
-        try {
-            // when
-            activeUserDao.deleteById(uid);
-            Assertions.fail();
-        }
-        catch(AuthDaoException authDaoException) {
-            // then
-            Assertions.assertEquals(String.format("Object with id %s is not stored!", uid.toString()), authDaoException.getMessage());
-        }
+        assertThatThrownBy(() -> activeUserDao.deleteById(uid))
+                .isInstanceOf(AuthDaoException.class)
+                .hasMessage(String.format("Object with id %s is not stored!", uid.toString()));
     }
 
     @Test
-    public void testUpdatePresentActiveUser() throws IllegalAccessException, AuthDaoException {
+    @Override
+    public void testUpdatePresent() {
         // given
-        ActiveUser activeUser = activeUserMockGenerator.generateMockActiveUser();
-        ActiveUser newActiveUser = activeUserMockGenerator.generateMockActiveUser();
+        ActiveUser activeUser = ActiveUserMockGenerator.generateMockActiveUser();
+        ActiveUser newActiveUser = ActiveUserMockGenerator.generateMockActiveUser();
         newActiveUser.setUid(activeUser.getUid());
         activeUserDao.save(activeUser);
 
         // when
-        ActiveUser result = activeUserDao.update(newActiveUser, activeUser.getUid());
+        ActiveUser result = activeUserDao.update(newActiveUser);
 
         // then
         Assertions.assertEquals(newActiveUser.getUid(), result.getUid());
@@ -158,20 +133,33 @@ public class ActiveUserDaoIntegrationTest {
     }
 
     @Test
-    public void testUpdateEmptyActiveUser() throws IllegalAccessException {
-        // given
-        UUID uid = UUID.randomUUID();
-        ActiveUser activeUser = activeUserMockGenerator.generateMockActiveUser();
+    @Override
+    public void testUpdateAbsent() {
+        ActiveUser activeUser = ActiveUserMockGenerator.generateMockActiveUser();
 
-        try {
-            // when
-            activeUserDao.update(activeUser, uid);
-            Assertions.fail();
+        assertThatThrownBy(() -> activeUserDao.update(activeUser))
+                .isInstanceOf(AuthDaoException.class)
+                .hasMessage(String.format("Object with id %s is not stored!", activeUser.getUid().toString()));
+    }
+
+    @Container
+    private static PostgreSQLContainer postgreSQLContainer = new PostgreSQLContainer("postgres:15")
+            .withDatabaseName("testdb")
+            .withUsername("postgres")
+            .withPassword("larlarlar");
+
+    static {
+        postgreSQLContainer.withInitScript("schema.sql");
+    }
+
+    private void addMockListOfActiveUsers(List<ActiveUser> activeUserList) {
+        for (ActiveUser activeUser : activeUserList) {
+            activeUserDao.save(activeUser);
         }
-        catch(AuthDaoException authDaoException) {
-            // then
-            Assertions.assertEquals(String.format("Object with id %s is not stored!", uid.toString()), authDaoException.getMessage());
-        }
+    }
+
+    private List<UUID> extractUids(List<ActiveUser> activeUserList) {
+        return activeUserList.stream().map((activeUser -> activeUser.getUid())).collect(Collectors.toList());
     }
 
 }

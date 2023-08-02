@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class PendingUserMockGenerator {
-    public PendingUser generateMockPendingUser() {
+    public static PendingUser generateMockPendingUser() {
         return PendingUser.builder()
                 .id(new Random().nextLong())
                 .uid(UUID.randomUUID())
@@ -26,8 +26,8 @@ public class PendingUserMockGenerator {
                 .build();
     }
 
-    public List<PendingUser> generateMockListOfPendingUsers(int size) {
-        return Stream.generate(this::generateMockPendingUser)
+    public static List<PendingUser> generateMockListOfPendingUsers(int size) {
+        return Stream.generate(PendingUserMockGenerator::generateMockPendingUser)
                 .limit(size)
                 .collect(Collectors.toList());
     }
