@@ -1,10 +1,12 @@
 package com.pba.authservice.integration;
 
 import com.pba.authservice.exceptions.AuthDaoException;
+import com.pba.authservice.mockgenerators.ActiveUserMockGenerator;
 import com.pba.authservice.persistance.model.ActiveUser;
 import com.pba.authservice.persistance.repository.ActiveUserDao;
 import jakarta.validation.constraints.NotNull;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -26,6 +28,7 @@ import java.util.stream.Collectors;
 public class ActiveUserDaoIntegrationTest {
     @Autowired
     private ActiveUserDao activeUserDao;
+    private ActiveUserMockGenerator activeUserMockGenerator;
 
     @Container
     private static PostgreSQLContainer postgreSQLContainer = new PostgreSQLContainer("postgres:15")
@@ -42,10 +45,15 @@ public class ActiveUserDaoIntegrationTest {
         dynamicPropertyRegistry.add("spring.datasource.url", postgreSQLContainer::getJdbcUrl);
     }
 
+    @BeforeEach
+    public void setUp() {
+        activeUserMockGenerator = new ActiveUserMockGenerator();
+    }
+
     @Test
     public void testSaveActiveUser() throws IllegalAccessException {
         // given
-        ActiveUser activeUser = new ActiveUser(5, UUID.randomUUID(), "abc", "def");
+        ActiveUser activeUser = activeUserMockGenerator.generateMockActiveUser();
 
         // when
         ActiveUser result = activeUserDao.save(activeUser);
@@ -66,11 +74,7 @@ public class ActiveUserDaoIntegrationTest {
     @Test
     public void testGetAllActiveUsers() throws IllegalAccessException {
         // given
-        List<ActiveUser> activeUserList = List.of(
-                new ActiveUser(1, UUID.randomUUID(), "abc", "def"),
-                new ActiveUser(2, UUID.randomUUID(), "abc", "def"),
-                new ActiveUser(3, UUID.randomUUID(), "abc", "def")
-        );
+        List<ActiveUser> activeUserList = activeUserMockGenerator.generateMockListOfActiveUsers(10);
         this.addMockListOfActiveUsers(activeUserList);
         List<UUID> activeUsersUids = this.extractUids(activeUserList);
 
@@ -85,12 +89,11 @@ public class ActiveUserDaoIntegrationTest {
     @Test
     public void testGetPresentActiveUserByUid() throws IllegalAccessException {
         // given
-        UUID uid = UUID.randomUUID();
-        ActiveUser activeUser = new ActiveUser(1, uid, "abc", "def");
+        ActiveUser activeUser = activeUserMockGenerator.generateMockActiveUser();
         activeUserDao.save(activeUser);
 
         // when
-        Optional<ActiveUser> result = activeUserDao.getById(uid);
+        Optional<ActiveUser> result = activeUserDao.getById(activeUser.getUid());
 
         // then
         Assertions.assertEquals(activeUser.getUid(), result.get().getUid());
@@ -111,12 +114,11 @@ public class ActiveUserDaoIntegrationTest {
     @Test
     public void testDeletePresentActiveUserByUid() throws AuthDaoException, IllegalAccessException {
         // given
-        UUID uid = UUID.randomUUID();
-        ActiveUser activeUser = new ActiveUser(1, uid, "abc", "def");
+        ActiveUser activeUser = activeUserMockGenerator.generateMockActiveUser();
         activeUserDao.save(activeUser);
 
         // when
-        ActiveUser result = activeUserDao.deleteById(uid);
+        ActiveUser result = activeUserDao.deleteById(activeUser.getUid());
 
         // then
         Assertions.assertEquals(activeUser.getUid(), result.getUid());
@@ -142,24 +144,24 @@ public class ActiveUserDaoIntegrationTest {
     @Test
     public void testUpdatePresentActiveUser() throws IllegalAccessException, AuthDaoException {
         // given
-        UUID uid = UUID.randomUUID();
-        ActiveUser activeUser = new ActiveUser(1, uid, "abc", "def");
-        ActiveUser newActiveUser = new ActiveUser(1, uid, "gg", "asaf");
+        ActiveUser activeUser = activeUserMockGenerator.generateMockActiveUser();
+        ActiveUser newActiveUser = activeUserMockGenerator.generateMockActiveUser();
+        newActiveUser.setUid(activeUser.getUid());
         activeUserDao.save(activeUser);
 
         // when
-        ActiveUser result = activeUserDao.update(newActiveUser, uid);
+        ActiveUser result = activeUserDao.update(newActiveUser, activeUser.getUid());
 
         // then
         Assertions.assertEquals(newActiveUser.getUid(), result.getUid());
-        Assertions.assertEquals(newActiveUser.getUid(), activeUserDao.getById(uid).get().getUid());
+        Assertions.assertEquals(newActiveUser.getUid(), activeUserDao.getById(activeUser.getUid()).get().getUid());
     }
 
     @Test
     public void testUpdateEmptyActiveUser() throws IllegalAccessException {
         // given
         UUID uid = UUID.randomUUID();
-        ActiveUser activeUser = new ActiveUser(1, uid, "abc", "def");
+        ActiveUser activeUser = activeUserMockGenerator.generateMockActiveUser();
 
         try {
             // when

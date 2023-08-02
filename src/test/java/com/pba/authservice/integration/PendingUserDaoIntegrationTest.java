@@ -1,11 +1,13 @@
 package com.pba.authservice.integration;
 
 import com.pba.authservice.exceptions.AuthDaoException;
+import com.pba.authservice.mockgenerators.PendingUserMockGenerator;
 import com.pba.authservice.persistance.model.ActiveUser;
 import com.pba.authservice.persistance.model.PendingUser;
 import com.pba.authservice.persistance.repository.PendingUserDao;
 import jakarta.validation.constraints.NotNull;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -29,6 +31,8 @@ public class PendingUserDaoIntegrationTest {
     @Autowired
     private PendingUserDao pendingUserDao;
 
+    private PendingUserMockGenerator pendingUserMockGenerator;
+
     @Container
     private static PostgreSQLContainer postgreSQLContainer = new PostgreSQLContainer("postgres:15")
             .withDatabaseName("testdb")
@@ -44,10 +48,15 @@ public class PendingUserDaoIntegrationTest {
         dynamicPropertyRegistry.add("spring.datasource.url", postgreSQLContainer::getJdbcUrl);
     }
 
+    @BeforeEach
+    public void setUp() {
+        pendingUserMockGenerator = new PendingUserMockGenerator();
+    }
+
     @Test
     public void testSavePendingUser() throws IllegalAccessException {
         // given
-        PendingUser pendingUser = new PendingUser(1, UUID.randomUUID(), "abc", "def", "ghi", new Timestamp(0), UUID.randomUUID());
+        PendingUser pendingUser = pendingUserMockGenerator.generateMockPendingUser();
 
         // when
         PendingUser result = pendingUserDao.save(pendingUser);
@@ -68,11 +77,7 @@ public class PendingUserDaoIntegrationTest {
     @Test
     public void testGetAllPendingUsers() throws IllegalAccessException {
         // given
-        List<PendingUser> pendingUserList = List.of(
-                new PendingUser(1, UUID.randomUUID(), "abc", "def", "ghi", new Timestamp(0), UUID.randomUUID()),
-                new PendingUser(1, UUID.randomUUID(), "abc", "def", "ghi", new Timestamp(0), UUID.randomUUID()),
-                new PendingUser(1, UUID.randomUUID(), "abc", "def", "ghi", new Timestamp(0), UUID.randomUUID())
-        );
+        List<PendingUser> pendingUserList = pendingUserMockGenerator.generateMockListOfPendingUsers(10);
         this.addMockListOfPendingUsers(pendingUserList);
         List<UUID> pendingUserUids = this.extractUids(pendingUserList);
 
@@ -87,12 +92,11 @@ public class PendingUserDaoIntegrationTest {
     @Test
     public void testGetPresentPendingUserByUid() throws IllegalAccessException {
         // given
-        UUID uid = UUID.randomUUID();
-        PendingUser pendingUser = new PendingUser(1, uid, "abc", "def", "ghi", new Timestamp(0), UUID.randomUUID());
+        PendingUser pendingUser = pendingUserMockGenerator.generateMockPendingUser();
         pendingUserDao.save(pendingUser);
 
         // when
-        Optional<PendingUser> result = pendingUserDao.getById(uid);
+        Optional<PendingUser> result = pendingUserDao.getById(pendingUser.getUid());
 
         // then
         Assertions.assertEquals(pendingUser.getUid(), result.get().getUid());
@@ -113,12 +117,11 @@ public class PendingUserDaoIntegrationTest {
     @Test
     public void testDeletePresentPendingUserByUid() throws AuthDaoException, IllegalAccessException {
         // given
-        UUID uid = UUID.randomUUID();
-        PendingUser pendingUser = new PendingUser(1, uid, "abc", "def", "ghi", new Timestamp(0), UUID.randomUUID());
+        PendingUser pendingUser = pendingUserMockGenerator.generateMockPendingUser();
         pendingUserDao.save(pendingUser);
 
         // when
-        PendingUser result = pendingUserDao.deleteById(uid);
+        PendingUser result = pendingUserDao.deleteById(pendingUser.getUid());
 
         // then
         Assertions.assertEquals(pendingUser.getUid(), result.getUid());
@@ -144,33 +147,32 @@ public class PendingUserDaoIntegrationTest {
     @Test
     public void testUpdatePresentActiveUser() throws IllegalAccessException, AuthDaoException {
         // given
-        UUID uid = UUID.randomUUID();
-        PendingUser pendingUser = new PendingUser(1, uid, "abc", "def", "ghi", new Timestamp(0), UUID.randomUUID());
-        PendingUser newPendingUser = new PendingUser(1, uid, "new", "def", "ghi", new Timestamp(0), UUID.randomUUID());
+        PendingUser pendingUser = pendingUserMockGenerator.generateMockPendingUser();
+        PendingUser newPendingUser = pendingUserMockGenerator.generateMockPendingUser();
+        newPendingUser.setUid(pendingUser.getUid());
         pendingUserDao.save(pendingUser);
 
         // when
-        PendingUser result = pendingUserDao.update(newPendingUser, uid);
+        PendingUser result = pendingUserDao.update(newPendingUser, pendingUser.getUid());
 
         // then
         Assertions.assertEquals(newPendingUser.getUid(), newPendingUser.getUid());
-        Assertions.assertEquals(newPendingUser.getUsername(), pendingUserDao.getById(uid).get().getUsername());
+        Assertions.assertEquals(newPendingUser.getUsername(), pendingUserDao.getById(pendingUser.getUid()).get().getUsername());
     }
 
     @Test
     public void testUpdateEmptyPendingUser() throws IllegalAccessException {
         // given
-        UUID uid = UUID.randomUUID();
-        PendingUser pendingUser = new PendingUser(1, uid, "abc", "def", "ghi", new Timestamp(0), UUID.randomUUID());
+        PendingUser pendingUser = pendingUserMockGenerator.generateMockPendingUser();
 
         try {
             // when
-            pendingUserDao.update(pendingUser, uid);
+            pendingUserDao.update(pendingUser, pendingUser.getUid());
             Assertions.fail();
         }
         catch(AuthDaoException authDaoException) {
             // then
-            Assertions.assertEquals(String.format("Object with id %s is not stored!", uid.toString()), authDaoException.getMessage());
+            Assertions.assertEquals(String.format("Object with id %s is not stored!", pendingUser.getUid().toString()), authDaoException.getMessage());
         }
     }
 }
