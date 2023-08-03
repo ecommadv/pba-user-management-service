@@ -4,7 +4,6 @@ import com.pba.authservice.exceptions.AuthDaoException;
 import com.pba.authservice.mockgenerators.ActiveUserMockGenerator;
 import com.pba.authservice.persistance.model.ActiveUser;
 import com.pba.authservice.persistance.repository.ActiveUserDao;
-import com.pba.authservice.persistance.repository.ActiveUserDaoImpl;
 import jakarta.validation.constraints.NotNull;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -29,11 +28,6 @@ import java.util.stream.Collectors;
 public class ActiveUserDaoIntegrationTest implements BaseDaoIntegrationTest {
     @Autowired
     private ActiveUserDao activeUserDao;
-
-    @DynamicPropertySource
-    public static void overrideProps(@NotNull DynamicPropertyRegistry dynamicPropertyRegistry) {
-        dynamicPropertyRegistry.add("spring.datasource.url", postgreSQLContainer::getJdbcUrl);
-    }
 
     @Test
     @Override
@@ -143,13 +137,11 @@ public class ActiveUserDaoIntegrationTest implements BaseDaoIntegrationTest {
     }
 
     @Container
-    private static PostgreSQLContainer postgreSQLContainer = new PostgreSQLContainer("postgres:15")
-            .withDatabaseName("testdb")
-            .withUsername("postgres")
-            .withPassword("larlarlar");
+    private static PostgreSQLContainer postgreSQLContainer = PostgreSqlContainerConfig.getInstance();
 
-    static {
-        postgreSQLContainer.withInitScript("schema.sql");
+    @DynamicPropertySource
+    private static void overrideProps(@NotNull DynamicPropertyRegistry dynamicPropertyRegistry) {
+        dynamicPropertyRegistry.add("spring.datasource.url", postgreSQLContainer::getJdbcUrl);
     }
 
     private void addMockListOfActiveUsers(List<ActiveUser> activeUserList) {

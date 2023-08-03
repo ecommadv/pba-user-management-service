@@ -1,12 +1,12 @@
 version: '3.8'
 services:
   postgres_db:
-    container_name: 'testdb'
+    container_name: 'authtest'
     image: postgres:14.2-alpine
     restart: always
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=larlarlar
-      - POSTGRES_DB=testdb
+      - POSTGRES_DB=authtest
     ports:
       - '5432:5432'

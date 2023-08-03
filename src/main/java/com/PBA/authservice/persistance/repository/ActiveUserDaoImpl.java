@@ -2,7 +2,9 @@ package com.pba.authservice.persistance.repository;
 
 import com.pba.authservice.persistance.model.ActiveUser;
 import com.pba.authservice.persistance.repository.mappers.ActiveUserRowMapper;
+import com.pba.authservice.persistance.repository.mappers.ActiveUserRowMapperImpl;
 import com.pba.authservice.persistance.repository.sql.ActiveUserSqlProvider;
+import com.pba.authservice.persistance.repository.sql.SqlProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
