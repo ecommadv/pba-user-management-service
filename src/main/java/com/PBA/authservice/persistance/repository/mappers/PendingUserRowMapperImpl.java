@@ -6,6 +6,7 @@ import org.springframework.stereotype.Component;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Component
@@ -18,7 +19,7 @@ public class PendingUserRowMapperImpl implements PendingUserRowMapper {
                 .username(rs.getString("username"))
                 .password(rs.getString("password"))
                 .email(rs.getString("email"))
-                .createdAt(rs.getTimestamp("created_at"))
+                .createdAt(rs.getTimestamp("created_at").toLocalDateTime())
                 .validationCode(UUID.fromString(rs.getString("validation_code")))
                 .build();
     }

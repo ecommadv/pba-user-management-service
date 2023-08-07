@@ -8,8 +8,8 @@ import java.util.UUID;
 
 public interface PendingUserDao {
     public PendingUser save(PendingUser pendingUser);
-    public Optional<PendingUser> getById(UUID uid);
+    public Optional<PendingUser> getById(Long id);
     public List<PendingUser> getAll();
-    public PendingUser deleteById(UUID uid);
-    public PendingUser update(PendingUser pendingUser);
+    public PendingUser deleteById(Long id);
+    public PendingUser update(PendingUser pendingUser, Long id);
 }

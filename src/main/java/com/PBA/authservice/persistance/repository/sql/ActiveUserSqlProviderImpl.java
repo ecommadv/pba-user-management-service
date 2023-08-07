@@ -22,7 +22,7 @@ public class ActiveUserSqlProviderImpl implements ActiveUserSqlProvider {
                 SELECT id, uid, username, password
                 FROM active_user
                 WHERE
-                    uid = ?
+                    id = ?
                 """;
     }
 
@@ -37,7 +37,7 @@ public class ActiveUserSqlProviderImpl implements ActiveUserSqlProvider {
     public String deleteById() {
         return """
                 DELETE FROM active_user
-                WHERE uid = ?
+                WHERE id = ?
                """;
     }
 
@@ -46,7 +46,7 @@ public class ActiveUserSqlProviderImpl implements ActiveUserSqlProvider {
         return """
                 UPDATE active_user
                 SET uid = ?, username = ?, password = ?
-                WHERE uid = ?
+                WHERE id = ?
                """;
     }
 }

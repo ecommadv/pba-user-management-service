@@ -17,21 +17,18 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.util.Optional;
+import java.util.Random;
 import java.util.UUID;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
-@Testcontainers
-@Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:/cleanup.sql")
-public class PendingUserDaoIntegrationTest implements BaseDaoIntegrationTest {
+public class PendingUserDaoIntegrationTest extends BaseDaoIntegrationTest {
     @Autowired
     private PendingUserDao pendingUserDao;
 
     @Test
-    @Override
     public void testSave() {
         // given
         PendingUser pendingUser = PendingUserMockGenerator.generateMockPendingUser();
@@ -43,7 +40,6 @@ public class PendingUserDaoIntegrationTest implements BaseDaoIntegrationTest {
         Assertions.assertEquals(pendingUser.getUid(), result.getUid());
     }
     @Test
-    @Override
     public void testGetAll() {
         // given
         List<PendingUser> pendingUserList = PendingUserMockGenerator.generateMockListOfPendingUsers(10);
@@ -59,41 +55,38 @@ public class PendingUserDaoIntegrationTest implements BaseDaoIntegrationTest {
     }
 
     @Test
-    @Override
     public void testGetPresentById() {
         // given
         PendingUser pendingUser = PendingUserMockGenerator.generateMockPendingUser();
-        pendingUserDao.save(pendingUser);
+        PendingUser pendingUserResult = pendingUserDao.save(pendingUser);
 
         // when
-        Optional<PendingUser> result = pendingUserDao.getById(pendingUser.getUid());
+        Optional<PendingUser> result = pendingUserDao.getById(pendingUserResult.getId());
 
         // then
         Assertions.assertEquals(pendingUser.getUid(), result.get().getUid());
     }
 
     @Test
-    @Override
     public void testGetAbsentById() {
         // given
         UUID uid = UUID.randomUUID();
 
         // when
-        Optional<PendingUser> result = pendingUserDao.getById(uid);
+        Optional<PendingUser> result = pendingUserDao.getById(2L);
 
         // then
         Assertions.assertTrue(result.isEmpty());
     }
 
     @Test
-    @Override
     public void testDeletePresentById() {
         // given
         PendingUser pendingUser = PendingUserMockGenerator.generateMockPendingUser();
-        pendingUserDao.save(pendingUser);
+        PendingUser pendingUserResult = pendingUserDao.save(pendingUser);
 
         // when
-        PendingUser result = pendingUserDao.deleteById(pendingUser.getUid());
+        PendingUser result = pendingUserDao.deleteById(pendingUserResult.getId());
 
         // then
         Assertions.assertEquals(pendingUser.getUid(), result.getUid());
@@ -101,17 +94,15 @@ public class PendingUserDaoIntegrationTest implements BaseDaoIntegrationTest {
     }
 
     @Test
-    @Override
     public void testDeleteAbsentById() {
-        UUID uid = UUID.randomUUID();
+        Long id = new Random().nextLong();
 
-        assertThatThrownBy(() -> pendingUserDao.deleteById(uid))
+        assertThatThrownBy(() -> pendingUserDao.deleteById(id))
                 .isInstanceOf(AuthDaoException.class)
-                .hasMessage(String.format("Object with id %s is not stored!", uid.toString()));
+                .hasMessage(String.format("Object with id %d is not stored!", id));
     }
 
     @Test
-    @Override
     public void testUpdatePresent() {
         // given
         PendingUser pendingUser = PendingUserMockGenerator.generateMockPendingUser();
@@ -120,30 +111,22 @@ public class PendingUserDaoIntegrationTest implements BaseDaoIntegrationTest {
         pendingUserDao.save(pendingUser);
 
         // when
-        PendingUser result = pendingUserDao.update(newPendingUser);
+        PendingUser result = pendingUserDao.update(newPendingUser, 2L);
 
         // then
         Assertions.assertEquals(newPendingUser.getUid(), newPendingUser.getUid());
-        Assertions.assertEquals(newPendingUser.getUsername(), pendingUserDao.getById(pendingUser.getUid()).get().getUsername());
+        Assertions.assertEquals(newPendingUser.getUsername(), pendingUserDao.getById(2L).get().getUsername());
     }
 
     @Test
-    @Override
     public void testUpdateAbsent() {
         // given
         PendingUser pendingUser = PendingUserMockGenerator.generateMockPendingUser();
+        Long id = new Random().nextLong();
 
-        assertThatThrownBy(() -> pendingUserDao.update(pendingUser))
+        assertThatThrownBy(() -> pendingUserDao.update(pendingUser, id))
                 .isInstanceOf(AuthDaoException.class)
-                .hasMessage(String.format("Object with id %s is not stored!", pendingUser.getUid().toString()));
-    }
-
-    @Container
-    private static PostgreSQLContainer postgreSQLContainer = PostgreSqlContainerConfig.getInstance();
-
-    @DynamicPropertySource
-    private static void overrideProps(@NotNull DynamicPropertyRegistry dynamicPropertyRegistry) {
-        dynamicPropertyRegistry.add("spring.datasource.url", postgreSQLContainer::getJdbcUrl);
+                .hasMessage(String.format("Object with id %d is not stored!", id));
     }
 
     private void addMockListOfPendingUsers(List<PendingUser> pendingUserList) {
@@ -153,6 +136,6 @@ public class PendingUserDaoIntegrationTest implements BaseDaoIntegrationTest {
     }
 
     private List<UUID> extractUids(List<PendingUser> pendingUserList) {
-        return pendingUserList.stream().map((pendingUser -> pendingUser.getUid())).collect(Collectors.toList());
+        return pendingUserList.stream().map((PendingUser::getUid)).collect(Collectors.toList());
     }
 }

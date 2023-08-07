@@ -18,19 +18,16 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import static org.assertj.core.api.Assertions.*;
 
 import java.util.Optional;
+import java.util.Random;
 import java.util.UUID;
 import java.util.List;
 import java.util.stream.Collectors;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
-@Testcontainers
-@Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:/cleanup.sql")
-public class ActiveUserDaoIntegrationTest implements BaseDaoIntegrationTest {
+public class ActiveUserDaoIntegrationTest extends BaseDaoIntegrationTest {
     @Autowired
     private ActiveUserDao activeUserDao;
 
     @Test
-    @Override
     public void testSave() {
         // given
         ActiveUser activeUser = ActiveUserMockGenerator.generateMockActiveUser();
@@ -42,7 +39,6 @@ public class ActiveUserDaoIntegrationTest implements BaseDaoIntegrationTest {
         Assertions.assertEquals(activeUser.getUid(), result.getUid());
     }
     @Test
-    @Override
     public void testGetAll() {
         // given
         List<ActiveUser> activeUserList = ActiveUserMockGenerator.generateMockListOfActiveUsers(10);
@@ -58,41 +54,38 @@ public class ActiveUserDaoIntegrationTest implements BaseDaoIntegrationTest {
     }
 
     @Test
-    @Override
     public void testGetPresentById() {
         // given
         ActiveUser activeUser = ActiveUserMockGenerator.generateMockActiveUser();
-        activeUserDao.save(activeUser);
+        ActiveUser activeUserResult = activeUserDao.save(activeUser);
 
         // when
-        Optional<ActiveUser> result = activeUserDao.getById(activeUser.getUid());
+        Optional<ActiveUser> result = activeUserDao.getById(activeUserResult.getId());
 
         // then
         Assertions.assertEquals(activeUser.getUid(), result.get().getUid());
     }
 
     @Test
-    @Override
     public void testGetAbsentById() {
         // given
-        UUID uid = UUID.randomUUID();
+        Long id = new Random().nextLong();
 
         // when
-        Optional<ActiveUser> result = activeUserDao.getById(uid);
+        Optional<ActiveUser> result = activeUserDao.getById(id);
 
         // then
         Assertions.assertTrue(result.isEmpty());
     }
 
     @Test
-    @Override
     public void testDeletePresentById() {
         // given
         ActiveUser activeUser = ActiveUserMockGenerator.generateMockActiveUser();
-        activeUserDao.save(activeUser);
+        ActiveUser activeUserResult = activeUserDao.save(activeUser);
 
         // when
-        ActiveUser result = activeUserDao.deleteById(activeUser.getUid());
+        ActiveUser result = activeUserDao.deleteById(activeUserResult.getId());
 
         // then
         Assertions.assertEquals(activeUser.getUid(), result.getUid());
@@ -100,48 +93,37 @@ public class ActiveUserDaoIntegrationTest implements BaseDaoIntegrationTest {
     }
 
     @Test
-    @Override
     public void testDeleteAbsentById() {
-        UUID uid = UUID.randomUUID();
+        Long id = new Random().nextLong();
 
-        assertThatThrownBy(() -> activeUserDao.deleteById(uid))
+        assertThatThrownBy(() -> activeUserDao.deleteById(id))
                 .isInstanceOf(AuthDaoException.class)
-                .hasMessage(String.format("Object with id %s is not stored!", uid.toString()));
+                .hasMessage(String.format("Object with id %s is not stored!", id.toString()));
     }
 
     @Test
-    @Override
     public void testUpdatePresent() {
         // given
         ActiveUser activeUser = ActiveUserMockGenerator.generateMockActiveUser();
         ActiveUser newActiveUser = ActiveUserMockGenerator.generateMockActiveUser();
-        newActiveUser.setUid(activeUser.getUid());
-        activeUserDao.save(activeUser);
+        ActiveUser activeUserResult = activeUserDao.save(activeUser);
 
         // when
-        ActiveUser result = activeUserDao.update(newActiveUser);
+        ActiveUser result = activeUserDao.update(newActiveUser, activeUserResult.getId());
 
         // then
         Assertions.assertEquals(newActiveUser.getUid(), result.getUid());
-        Assertions.assertEquals(newActiveUser.getUid(), activeUserDao.getById(activeUser.getUid()).get().getUid());
+        Assertions.assertEquals(newActiveUser.getUid(), activeUserDao.getById(activeUserResult.getId()).get().getUid());
     }
 
     @Test
-    @Override
     public void testUpdateAbsent() {
         ActiveUser activeUser = ActiveUserMockGenerator.generateMockActiveUser();
+        Long id = new Random().nextLong();
 
-        assertThatThrownBy(() -> activeUserDao.update(activeUser))
+        assertThatThrownBy(() -> activeUserDao.update(activeUser, id))
                 .isInstanceOf(AuthDaoException.class)
-                .hasMessage(String.format("Object with id %s is not stored!", activeUser.getUid().toString()));
-    }
-
-    @Container
-    private static PostgreSQLContainer postgreSQLContainer = PostgreSqlContainerConfig.getInstance();
-
-    @DynamicPropertySource
-    private static void overrideProps(@NotNull DynamicPropertyRegistry dynamicPropertyRegistry) {
-        dynamicPropertyRegistry.add("spring.datasource.url", postgreSQLContainer::getJdbcUrl);
+                .hasMessage(String.format("Object with id %s is not stored!", id.toString()));
     }
 
     private void addMockListOfActiveUsers(List<ActiveUser> activeUserList) {
@@ -151,7 +133,7 @@ public class ActiveUserDaoIntegrationTest implements BaseDaoIntegrationTest {
     }
 
     private List<UUID> extractUids(List<ActiveUser> activeUserList) {
-        return activeUserList.stream().map((activeUser -> activeUser.getUid())).collect(Collectors.toList());
+        return activeUserList.stream().map((ActiveUser::getUid)).collect(Collectors.toList());
     }
 
 }

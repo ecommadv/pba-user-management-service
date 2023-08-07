@@ -12,11 +12,11 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.testcontainers.shaded.com.fasterxml.jackson.databind.ser.Serializers;
 
 import static org.mockito.Mockito.when;
 
-@ExtendWith(MockitoExtension.class)
-public class ActiveUserServiceUnitTest implements BaseServiceUnitTest {
+public class ActiveUserServiceUnitTest extends BaseUnitTest {
     @InjectMocks
     private ActiveUserServiceImpl activeUserService;
 
@@ -24,7 +24,6 @@ public class ActiveUserServiceUnitTest implements BaseServiceUnitTest {
     private ActiveUserDaoImpl activeUserDao;
 
     @Test
-    @Override
     public void testAdd() {
         // given
         ActiveUser activeUser = ActiveUserMockGenerator.generateMockActiveUser();

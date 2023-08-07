@@ -11,19 +11,10 @@ import org.springframework.stereotype.Repository;
 import java.util.UUID;
 
 @Repository
-public class PendingUserDaoImpl extends JdbcRepository<PendingUser, UUID> implements PendingUserDao {
+public class PendingUserDaoImpl extends JdbcRepository<PendingUser, Long> implements PendingUserDao {
     @Autowired
-    public PendingUserDaoImpl(PendingUserRowMapper rowMapper, PendingUserSqlProvider sqlProvider, JdbcTemplate jdbcTemplate) {
-        super(rowMapper, sqlProvider, jdbcTemplate);
-    }
-    @Override
-    public PendingUser save(PendingUser pendingUser) {
-        return super.save(pendingUser, pendingUser.getUid());
-    }
-
-    @Override
-    public PendingUser update(PendingUser pendingUser) {
-        return super.update(pendingUser, pendingUser.getUid());
+    public PendingUserDaoImpl(PendingUserRowMapper rowMapper, PendingUserSqlProvider sqlProvider, JdbcTemplate jdbcTemplate, UtilsFactory utilsFactory) {
+        super(rowMapper, sqlProvider, jdbcTemplate, utilsFactory);
     }
 
 }

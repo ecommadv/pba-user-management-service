@@ -8,8 +8,8 @@ import java.util.List;
 
 public interface ActiveUserDao {
     public ActiveUser save(ActiveUser activeUser);
-    public Optional<ActiveUser> getById(UUID uid);
+    public Optional<ActiveUser> getById(Long id);
     public List<ActiveUser> getAll();
-    public ActiveUser deleteById(UUID uid);
-    public ActiveUser update(ActiveUser activeUser);
+    public ActiveUser deleteById(Long id);
+    public ActiveUser update(ActiveUser activeUser, Long id);
 }

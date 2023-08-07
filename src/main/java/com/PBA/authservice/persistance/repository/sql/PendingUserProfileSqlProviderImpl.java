@@ -24,7 +24,7 @@ public class PendingUserProfileSqlProviderImpl implements PendingUserProfileSqlP
                 SELECT id, firstname, lastname, email, user_id
                 FROM pending_user_profile
                 WHERE
-                    uid = ?
+                    id = ?
                 """;
     }
 
@@ -39,7 +39,7 @@ public class PendingUserProfileSqlProviderImpl implements PendingUserProfileSqlP
     public String deleteById() {
         return """
                 DELETE FROM pending_user
-                WHERE uid = ?
+                WHERE id = ?
                """;
     }
 
@@ -48,7 +48,7 @@ public class PendingUserProfileSqlProviderImpl implements PendingUserProfileSqlP
         return """
                 UPDATE pending_user
                 SET uid = ?, username = ?, password = ?, email = ?, created_at = ?, validation_code = ?
-                WHERE uid = ?
+                WHERE id = ?
                """;
     }
 }

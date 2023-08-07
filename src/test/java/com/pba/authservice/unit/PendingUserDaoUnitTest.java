@@ -4,9 +4,9 @@ import com.pba.authservice.exceptions.AuthDaoException;
 import com.pba.authservice.mockgenerators.PendingUserMockGenerator;
 import com.pba.authservice.persistance.model.PendingUser;
 import com.pba.authservice.persistance.repository.PendingUserDaoImpl;
+import com.pba.authservice.persistance.repository.UtilsFactory;
 import com.pba.authservice.persistance.repository.mappers.PendingUserRowMapper;
 import com.pba.authservice.persistance.repository.sql.PendingUserSqlProvider;
-import com.pba.authservice.persistance.repository.sql.PendingUserSqlProviderImpl;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -14,17 +14,15 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.support.KeyHolder;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-@ExtendWith(MockitoExtension.class)
-public class PendingUserDaoUnitTest implements BaseDaoUnitTest {
+public class PendingUserDaoUnitTest extends BaseUnitTest {
     @InjectMocks
     private PendingUserDaoImpl pendingUserDao;
 
@@ -37,13 +35,23 @@ public class PendingUserDaoUnitTest implements BaseDaoUnitTest {
     @Mock
     private JdbcTemplate jdbcTemplate;
 
+    @Mock
+    private UtilsFactory utilsFactory;
+
+    @Mock
+    private KeyHolder keyHolder;
+
     @Test
-    @Override
-    public void testSave() {
+    public void testSave() throws Exception {
         // given
         PendingUser pendingUser = PendingUserMockGenerator.generateMockPendingUser();
-        this.setUpGetByUid(pendingUser);
-        when(jdbcTemplate.query("select", pendingUserRowMapper, pendingUser.getUid())).thenReturn(List.of(pendingUser));
+        pendingUser.setId(1L);
+        this.setUpGetById(pendingUser);
+
+        Map<String, Object> keys = new HashMap<>();
+        keys.put("id", 1L);
+        when(keyHolder.getKeys()).thenReturn(keys);
+        when(utilsFactory.keyHolder()).thenReturn(keyHolder);
 
         // when
         PendingUser result = pendingUserDao.save(pendingUser);
@@ -53,35 +61,32 @@ public class PendingUserDaoUnitTest implements BaseDaoUnitTest {
     }
 
     @Test
-    @Override
     public void testGetPresentById() {
         // given
         PendingUser pendingUser = PendingUserMockGenerator.generateMockPendingUser();
-        this.setUpGetByUid(pendingUser);
+        this.setUpGetById(pendingUser);
 
         // when
-        Optional<PendingUser> result = pendingUserDao.getById(pendingUser.getUid());
+        Optional<PendingUser> result = pendingUserDao.getById(pendingUser.getId());
 
         // then
         Assertions.assertEquals(pendingUser, result.get());
     }
 
     @Test
-    @Override
     public void testGetAbsentById() {
         // given
-        UUID absentUid = UUID.randomUUID();
-        this.setUpEmptyGetByUid(absentUid);
+        Long absentId = new Random().nextLong();
+        this.setUpEmptyGetById(absentId);
 
         // when
-        Optional<PendingUser> result = pendingUserDao.getById(absentUid);
+        Optional<PendingUser> result = pendingUserDao.getById(absentId);
 
         // then
         Assertions.assertTrue(result.isEmpty());
     }
 
     @Test
-    @Override
     public void testGetAll() {
         // given
         List<PendingUser> pendingUserList = PendingUserMockGenerator.generateMockListOfPendingUsers(10);
@@ -96,70 +101,83 @@ public class PendingUserDaoUnitTest implements BaseDaoUnitTest {
     }
 
     @Test
-    @Override
     public void testDeletePresentById() throws AuthDaoException {
         // given
         PendingUser pendingUser = PendingUserMockGenerator.generateMockPendingUser();
         when(pendingUserSqlProvider.deleteById()).thenReturn("delete");
-        this.setUpGetByUid(pendingUser);
+        when(jdbcTemplate.update("delete", pendingUser.getId())).thenReturn(1);
+        this.setUpGetById(pendingUser);
 
         // when
-        PendingUser result = pendingUserDao.deleteById(pendingUser.getUid());
+        PendingUser result = pendingUserDao.deleteById(pendingUser.getId());
 
         // then
         Assertions.assertEquals(pendingUser, result);
     }
 
     @Test
-    @Override
     public void testDeleteAbsentById() {
-        // given
-        UUID uid = UUID.randomUUID();
-        this.setUpEmptyGetByUid(uid);
+        Long absentId = new Random().nextLong();
+        this.setUpEmptyGetById(absentId);
+        when(pendingUserSqlProvider.deleteById()).thenReturn("delete");
+        when(jdbcTemplate.update("delete", absentId)).thenReturn(0);
 
-        assertThatThrownBy(() -> pendingUserDao.deleteById(uid))
+        assertThatThrownBy(() -> pendingUserDao.deleteById(absentId))
                 .isInstanceOf(AuthDaoException.class)
-                .hasMessage(String.format("Object with id %s is not stored!", uid.toString()));
+                .hasMessage(String.format("Object with id %s is not stored!", absentId.toString()));
     }
 
     @Test
-    @Override
     public void testUpdatePresent() throws AuthDaoException {
         // given
         PendingUser pendingUser = PendingUserMockGenerator.generateMockPendingUser();
         PendingUser newPendingUser = PendingUserMockGenerator.generateMockPendingUser();
-        newPendingUser.setUid(pendingUser.getUid());
-        this.setUpGetByUid(pendingUser);
+        newPendingUser.setId(pendingUser.getId());
         when(pendingUserSqlProvider.update()).thenReturn("update");
+        when(jdbcTemplate.update("update",
+                newPendingUser.getUid(),
+                newPendingUser.getUsername(),
+                newPendingUser.getPassword(),
+                newPendingUser.getEmail(),
+                newPendingUser.getCreatedAt(),
+                newPendingUser.getValidationCode(),
+                newPendingUser.getId())).thenReturn(1);
 
         // when
-        PendingUser result = pendingUserDao.update(newPendingUser);
+        PendingUser result = pendingUserDao.update(newPendingUser, newPendingUser.getId());
 
         // then
         Assertions.assertEquals(newPendingUser, result);
     }
 
     @Test
-    @Override
     public void testUpdateAbsent() {
         // given
-        UUID uid = UUID.randomUUID();
+        Long id = new Random().nextLong();
         PendingUser absentPendingUser = PendingUserMockGenerator.generateMockPendingUser();
-        absentPendingUser.setUid(uid);
-        this.setUpEmptyGetByUid(uid);
+        absentPendingUser.setId(id);
+        when(pendingUserSqlProvider.update()).thenReturn("update");
+        when(jdbcTemplate.update("update",
+                absentPendingUser.getUid(),
+                absentPendingUser.getUsername(),
+                absentPendingUser.getPassword(),
+                absentPendingUser.getEmail(),
+                absentPendingUser.getCreatedAt(),
+                absentPendingUser.getValidationCode(),
+                id)).thenReturn(0);
 
-        assertThatThrownBy(() -> pendingUserDao.update(absentPendingUser))
+        assertThatThrownBy(() -> pendingUserDao.update(absentPendingUser, id))
                 .isInstanceOf(AuthDaoException.class)
-                .hasMessage(String.format("Object with id %s is not stored!", uid.toString()));
+                .hasMessage(String.format("Object with id %s is not stored!", id.toString()));
     }
 
-    private void setUpGetByUid(PendingUser pendingUser) {
+    private void setUpGetById(PendingUser pendingUser) {
         when(pendingUserSqlProvider.selectById()).thenReturn("select");
-        when(jdbcTemplate.query("select", pendingUserRowMapper, pendingUser.getUid())).thenReturn(List.of(pendingUser));
+        when(jdbcTemplate.query("select", pendingUserRowMapper, pendingUser.getId())).thenReturn(List.of(pendingUser));
     }
 
-    private void setUpEmptyGetByUid(UUID uid) {
+    private void setUpEmptyGetById(Long id) {
         when(pendingUserSqlProvider.selectById()).thenReturn("select");
-        when(jdbcTemplate.query("select", pendingUserRowMapper, uid)).thenReturn(List.of());
+        when(jdbcTemplate.query("select", pendingUserRowMapper, id)).thenReturn(List.of());
     }
 }

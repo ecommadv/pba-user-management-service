@@ -12,19 +12,9 @@ import org.springframework.stereotype.Repository;
 import java.util.UUID;
 
 @Repository
-public class ActiveUserDaoImpl extends JdbcRepository<ActiveUser, UUID> implements ActiveUserDao {
+public class ActiveUserDaoImpl extends JdbcRepository<ActiveUser, Long> implements ActiveUserDao {
     @Autowired
-    public ActiveUserDaoImpl(ActiveUserRowMapper rowMapper, ActiveUserSqlProvider sqlProvider, JdbcTemplate jdbcTemplate) {
-        super(rowMapper, sqlProvider, jdbcTemplate);
-    }
-
-    @Override
-    public ActiveUser save(ActiveUser activeUser) {
-        return super.save(activeUser, activeUser.getUid());
-    }
-
-    @Override
-    public ActiveUser update(ActiveUser activeUser) {
-        return super.update(activeUser, activeUser.getUid());
+    public ActiveUserDaoImpl(ActiveUserRowMapper rowMapper, ActiveUserSqlProvider sqlProvider, JdbcTemplate jdbcTemplate, UtilsFactory utilsFactory) {
+        super(rowMapper, sqlProvider, jdbcTemplate, utilsFactory);
     }
 }

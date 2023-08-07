@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Builder
@@ -18,7 +19,7 @@ public class PendingUser {
     private String username;
     private String password;
     private String email;
-    private Timestamp createdAt;
+    private LocalDateTime createdAt;
     private UUID validationCode;
 }
 
