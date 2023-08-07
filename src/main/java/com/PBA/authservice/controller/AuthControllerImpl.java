@@ -1,9 +1,7 @@
 package com.pba.authservice.controller;
 
 import com.pba.authservice.facade.PendingUserFacade;
-import com.pba.authservice.facade.PendingUserFacadeImpl;
 import com.pba.authservice.persistance.model.dtos.PendingUserRequest;
-import com.pba.authservice.persistance.model.dtos.PendingUserResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,8 +21,8 @@ public class AuthControllerImpl implements AuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<PendingUserResponse> registerUser(@RequestBody PendingUserRequest pendingUserRequest) {
-        PendingUserResponse pendingUserResponse = pendingUserFacade.addPendingUser(pendingUserRequest);
-        return new ResponseEntity<>(pendingUserResponse, HttpStatus.CREATED);
+    public ResponseEntity<?> registerUser(@RequestBody PendingUserRequest pendingUserRequest) {
+        pendingUserFacade.addPendingUser(pendingUserRequest);
+        return new ResponseEntity<>(HttpStatus.CREATED);
     }
 }
