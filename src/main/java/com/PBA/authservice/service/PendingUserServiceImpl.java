@@ -10,11 +10,11 @@ import org.springframework.stereotype.Service;
 public class PendingUserServiceImpl implements PendingUserService {
     private final PendingUserDao pendingUserDao;
 
-    @Autowired
     public PendingUserServiceImpl(PendingUserDao pendingUserDao) {
         this.pendingUserDao = pendingUserDao;
     }
 
+    @Autowired
     public PendingUser addPendingUser(PendingUser pendingUser) {
         return pendingUserDao.save(pendingUser);
     }

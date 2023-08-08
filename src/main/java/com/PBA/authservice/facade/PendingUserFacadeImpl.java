@@ -11,12 +11,13 @@ import org.springframework.stereotype.Component;
 public class PendingUserFacadeImpl implements PendingUserFacade {
     private final PendingUserService pendingUserService;
     private final PendingUserDtoMapper pendingUserDtoMapper;
-    @Autowired
+
     public PendingUserFacadeImpl(PendingUserService pendingUserService, PendingUserDtoMapper pendingUserDtoMapper) {
         this.pendingUserService = pendingUserService;
         this.pendingUserDtoMapper = pendingUserDtoMapper;
     }
 
+    @Autowired
     public void addPendingUser(PendingUserRequest pendingUserRequest) {
         PendingUser pendingUser = pendingUserDtoMapper.toPendingUser(pendingUserRequest);
         pendingUserService.addPendingUser(pendingUser);

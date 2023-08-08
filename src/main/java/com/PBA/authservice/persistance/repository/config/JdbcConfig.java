@@ -23,7 +23,6 @@ public class JdbcConfig {
                 .build();
     }
 
-    @Autowired
     @Bean
     public JdbcTemplate jdbcTemplate(HikariDataSource dataSource) {
         return new JdbcTemplate(dataSource);

@@ -22,7 +22,8 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class PendingUserDaoUnitTest extends BaseUnitTest {
+@ExtendWith(MockitoExtension.class)
+public class PendingUserDaoUnitTest {
     @InjectMocks
     private PendingUserDaoImpl pendingUserDao;
 

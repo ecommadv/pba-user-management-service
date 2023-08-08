@@ -38,6 +38,7 @@ public class PendingUserDaoIntegrationTest extends BaseDaoIntegrationTest {
 
         // then
         Assertions.assertEquals(pendingUser.getUid(), result.getUid());
+        Assertions.assertEquals(1, pendingUserDao.getAll().size());
     }
     @Test
     public void testGetAll() {

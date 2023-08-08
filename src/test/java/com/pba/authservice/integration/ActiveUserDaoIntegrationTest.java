@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class ActiveUserDaoIntegrationTest extends BaseDaoIntegrationTest {
-    @Autowired
     private ActiveUserDao activeUserDao;
 
     @Test
@@ -37,6 +36,7 @@ public class ActiveUserDaoIntegrationTest extends BaseDaoIntegrationTest {
 
         // then
         Assertions.assertEquals(activeUser.getUid(), result.getUid());
+        Assertions.assertEquals(1, activeUserDao.getAll().size());
     }
     @Test
     public void testGetAll() {

@@ -2,9 +2,7 @@ package com.pba.authservice.unit;
 
 import com.pba.authservice.mockgenerators.ActiveUserMockGenerator;
 import com.pba.authservice.persistance.model.ActiveUser;
-import com.pba.authservice.persistance.repository.ActiveUserDao;
 import com.pba.authservice.persistance.repository.ActiveUserDaoImpl;
-import com.pba.authservice.service.ActiveUserService;
 import com.pba.authservice.service.ActiveUserServiceImpl;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -12,11 +10,11 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.testcontainers.shaded.com.fasterxml.jackson.databind.ser.Serializers;
 
 import static org.mockito.Mockito.when;
 
-public class ActiveUserServiceUnitTest extends BaseUnitTest {
+@ExtendWith(MockitoExtension.class)
+public class ActiveUserServiceUnitTest {
     @InjectMocks
     private ActiveUserServiceImpl activeUserService;
 

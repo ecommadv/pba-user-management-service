@@ -18,7 +18,7 @@ public class JdbcConfig {
                 .type(HikariDataSource.class)
                 .build();
     }
-    @Autowired
+
     @Bean
     public JdbcTemplate jdbcTemplate(HikariDataSource dataSource) {
         return new JdbcTemplate(dataSource);

@@ -13,7 +13,6 @@ import java.util.UUID;
 
 @Repository
 public class ActiveUserDaoImpl extends JdbcRepository<ActiveUser, Long> implements ActiveUserDao {
-    @Autowired
     public ActiveUserDaoImpl(ActiveUserRowMapper rowMapper, ActiveUserSqlProvider sqlProvider, JdbcTemplate jdbcTemplate, UtilsFactory utilsFactory) {
         super(rowMapper, sqlProvider, jdbcTemplate, utilsFactory);
     }

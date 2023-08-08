@@ -12,7 +12,6 @@ import java.util.UUID;
 
 @Repository
 public class PendingUserDaoImpl extends JdbcRepository<PendingUser, Long> implements PendingUserDao {
-    @Autowired
     public PendingUserDaoImpl(PendingUserRowMapper rowMapper, PendingUserSqlProvider sqlProvider, JdbcTemplate jdbcTemplate, UtilsFactory utilsFactory) {
         super(rowMapper, sqlProvider, jdbcTemplate, utilsFactory);
     }

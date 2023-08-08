@@ -77,7 +77,7 @@ public abstract class JdbcRepository<ObjectT, IdT> {
         }
         return obj;
     }
-    private static List<Object> extractAttributes(Object obj) {
+    private List<Object> extractAttributes(Object obj) {
         List<Field> fields = Arrays.stream(obj.getClass().getDeclaredFields()).toList();
         fields.forEach((field) -> field.setAccessible(true));
         return fields.stream()
@@ -86,7 +86,7 @@ public abstract class JdbcRepository<ObjectT, IdT> {
                 .collect(Collectors.toList());
     }
 
-    private static Object getFieldValue(Field field, Object obj) {
+    private Object getFieldValue(Field field, Object obj) {
         try {
             return field.get(obj);
         } catch (IllegalAccessException e) {

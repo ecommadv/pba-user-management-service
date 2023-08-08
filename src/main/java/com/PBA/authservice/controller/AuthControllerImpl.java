@@ -10,19 +10,17 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-@RequestMapping("/api/auth")
 @RestController
 public class AuthControllerImpl implements AuthController {
     private final PendingUserFacade pendingUserFacade;
 
-    @Autowired
     public AuthControllerImpl(PendingUserFacade pendingUserFacade) {
         this.pendingUserFacade = pendingUserFacade;
     }
 
-    @PostMapping("/register")
-    public ResponseEntity<?> registerUser(@RequestBody PendingUserRequest pendingUserRequest) {
+    @Override
+    public ResponseEntity<Void> registerUser(PendingUserRequest pendingUserRequest) {
         pendingUserFacade.addPendingUser(pendingUserRequest);
-        return new ResponseEntity<>(HttpStatus.CREATED);
+        return new ResponseEntity<Void>(HttpStatus.CREATED);
     }
 }
