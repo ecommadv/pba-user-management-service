@@ -14,7 +14,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @Data
 public class PendingUser {
-    private long id;
+    private Long id;
     private UUID uid;
     private String username;
     private String password;

@@ -12,7 +12,7 @@ public class PendingUserRowMapperImpl implements PendingUserRowMapper {
     @Override
     public PendingUser mapRow(ResultSet rs, int rowNum) throws SQLException {
         return PendingUser.builder()
-                .id(rs.getInt("id"))
+                .id(rs.getLong("id"))
                 .uid(UUID.fromString(rs.getString("uid")))
                 .username(rs.getString("username"))
                 .password(rs.getString("password"))
