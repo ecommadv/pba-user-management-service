@@ -2,7 +2,6 @@ package com.pba.authservice.service;
 
 import com.pba.authservice.persistance.model.PendingUser;
 import com.pba.authservice.persistance.repository.PendingUserDao;
-import com.pba.authservice.persistance.repository.PendingUserDaoImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -14,7 +13,7 @@ public class PendingUserServiceImpl implements PendingUserService {
         this.pendingUserDao = pendingUserDao;
     }
 
-    @Autowired
+    @Override
     public PendingUser addPendingUser(PendingUser pendingUser) {
         return pendingUserDao.save(pendingUser);
     }

@@ -1,12 +1,10 @@
 package com.pba.authservice.persistance.repository.mappers;
 
 import com.pba.authservice.persistance.model.PendingUser;
-import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Component

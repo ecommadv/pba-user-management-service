@@ -1,4 +1,4 @@
-package com.PBA.authservice;
+package com.pba.authservice;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

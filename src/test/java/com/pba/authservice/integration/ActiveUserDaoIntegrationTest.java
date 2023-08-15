@@ -4,17 +4,10 @@ import com.pba.authservice.exceptions.AuthDaoException;
 import com.pba.authservice.mockgenerators.ActiveUserMockGenerator;
 import com.pba.authservice.persistance.model.ActiveUser;
 import com.pba.authservice.persistance.repository.ActiveUserDao;
-import jakarta.validation.constraints.NotNull;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
-import org.springframework.test.context.jdbc.Sql;
-import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
+
 import static org.assertj.core.api.Assertions.*;
 
 import java.util.Optional;
@@ -24,6 +17,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class ActiveUserDaoIntegrationTest extends BaseDaoIntegrationTest {
+    @Autowired
     private ActiveUserDao activeUserDao;
 
     @Test

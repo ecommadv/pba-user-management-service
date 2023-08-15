@@ -1,15 +1,11 @@
 package com.pba.authservice.mockgenerators;
 
 import com.pba.authservice.persistance.model.ActiveUser;
-import net.bytebuddy.dynamic.TypeResolutionStrategy;
-import org.mockito.Mockito;
-import org.springframework.stereotype.Component;
-import org.testcontainers.shaded.org.apache.commons.lang3.RandomStringUtils;
+import com.pba.authservice.persistance.model.dtos.ActiveUserDto;
 
 import java.util.List;
 import java.util.Random;
 import java.util.UUID;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -27,5 +23,13 @@ public class ActiveUserMockGenerator {
         return Stream.generate(ActiveUserMockGenerator::generateMockActiveUser)
                 .limit(size)
                 .collect(Collectors.toList());
+    }
+
+    public static ActiveUserDto generateMockActiveUserDto() {
+        return ActiveUserDto.builder()
+                .uid(UUID.randomUUID())
+                .username(UUID.randomUUID().toString())
+                .password(UUID.randomUUID().toString())
+                .build();
     }
 }

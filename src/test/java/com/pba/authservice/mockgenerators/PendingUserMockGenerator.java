@@ -1,16 +1,13 @@
 package com.pba.authservice.mockgenerators;
 
-import com.pba.authservice.persistance.model.ActiveUser;
 import com.pba.authservice.persistance.model.PendingUser;
-import com.pba.authservice.persistance.model.dtos.PendingUserRequest;
-import org.mockito.Mockito;
+import com.pba.authservice.controller.request.PendingUserCreateRequest;
 
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.List;
 import java.util.Random;
 import java.util.UUID;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -33,8 +30,8 @@ public class PendingUserMockGenerator {
                 .collect(Collectors.toList());
     }
 
-    public static PendingUserRequest generateMockPendingUserRequest() {
-        return PendingUserRequest.builder()
+    public static PendingUserCreateRequest generateMockPendingUserRequest() {
+        return PendingUserCreateRequest.builder()
                 .username(UUID.randomUUID().toString())
                 .password(UUID.randomUUID().toString())
                 .email(UUID.randomUUID().toString())
