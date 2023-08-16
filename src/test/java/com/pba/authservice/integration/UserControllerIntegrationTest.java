@@ -2,12 +2,11 @@ package com.pba.authservice.integration;
 
 import com.pba.authservice.mockgenerators.ActiveUserMockGenerator;
 import com.pba.authservice.mockgenerators.PendingUserMockGenerator;
-import com.pba.authservice.controller.request.PendingUserCreateRequest;
+import com.pba.authservice.controller.request.UserCreateRequest;
 import com.pba.authservice.persistance.model.ActiveUser;
-import com.pba.authservice.persistance.model.dtos.ActiveUserDto;
-import com.pba.authservice.persistance.repository.ActiveUserDao;
-import com.pba.authservice.persistance.repository.PendingUserDao;
-import org.junit.jupiter.api.Assertions;
+import com.pba.authservice.persistance.model.ActiveUserProfile;
+import com.pba.authservice.persistance.model.dtos.UserDto;
+import com.pba.authservice.persistance.repository.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +16,7 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 public class UserControllerIntegrationTest extends BaseControllerIntegrationTest {
@@ -24,7 +24,13 @@ public class UserControllerIntegrationTest extends BaseControllerIntegrationTest
     private PendingUserDao pendingUserDao;
 
     @Autowired
+    private PendingUserProfileDao pendingUserProfileDao;
+
+    @Autowired
     private ActiveUserDao activeUserDao;
+
+    @Autowired
+    private ActiveUserProfileDao activeUserProfileDao;
 
     @Autowired
     private MockMvc mockMvc;
@@ -38,29 +44,45 @@ public class UserControllerIntegrationTest extends BaseControllerIntegrationTest
 
     @Test
     public void testRegisterUser() throws Exception {
-        PendingUserCreateRequest pendingUserRequest = PendingUserMockGenerator.generateMockPendingUserRequest();
-        String pendingUserRequestJSON = objectMapper.writeValueAsString(pendingUserRequest);
+        // given
+        UserCreateRequest userCreateRequest = PendingUserMockGenerator.generateMockUserCreateRequest();
+        String userCreateRequestJSON = objectMapper.writeValueAsString(userCreateRequest);
+        String registerUserEndpoint = "/api/user/register";
 
-        MvcResult result = mockMvc.perform(MockMvcRequestBuilders.post("/api/user/register")
+        // when
+        MvcResult result = mockMvc.perform(MockMvcRequestBuilders.post(registerUserEndpoint)
                                     .contentType(MediaType.APPLICATION_JSON)
-                                    .content(pendingUserRequestJSON))
+                                    .content(userCreateRequestJSON))
                 .andExpect(status().isCreated())
                 .andReturn();
 
-        Assertions.assertEquals(1, pendingUserDao.getAll().size());
+        // then
+        assertEquals(1, pendingUserDao.getAll().size());
+        assertEquals(1, pendingUserProfileDao.getAll().size());
     }
 
     @Test
     public void testGetActiveUser() throws Exception {
+        // given
         ActiveUser activeUser = ActiveUserMockGenerator.generateMockActiveUser();
-        activeUserDao.save(activeUser);
+        ActiveUser savedActiveUser = activeUserDao.save(activeUser);
+        ActiveUserProfile activeUserProfile = ActiveUserMockGenerator.generateMockActiveUserProfile(savedActiveUser.getId());
+        ActiveUserProfile savedActiveUserProfile = activeUserProfileDao.save(activeUserProfile);
+        String getUserEndpoint = String.format("/api/user/%s", activeUser.getUid().toString());
 
-        MvcResult result = mockMvc.perform(MockMvcRequestBuilders.get(String.format("/api/user/active/%s", activeUser.getUid().toString())))
+        // when
+        MvcResult result = mockMvc.perform(MockMvcRequestBuilders.get(getUserEndpoint))
                 .andExpect(status().isOk())
                 .andReturn();
-        String activeUserDtoJSON = result.getResponse().getContentAsString();
-        ActiveUserDto activeUserDto = objectMapper.readValue(activeUserDtoJSON, ActiveUserDto.class);
+        String userDtoJSON = result.getResponse().getContentAsString();
+        UserDto userDto = objectMapper.readValue(userDtoJSON, UserDto.class);
 
-        Assertions.assertEquals(activeUser.getUid(), activeUserDto.getUid());
+        // then
+        assertEquals(activeUser.getUid(), userDto.getUid());
+        assertEquals(activeUserProfile.getFirstName(), userDto.getUserProfile().getFirstName());
+        assertEquals(activeUserProfile.getLastName(), userDto.getUserProfile().getLastName());
+        assertEquals(activeUserProfile.getCountry(), userDto.getUserProfile().getCountry());
+        assertEquals(activeUserProfile.getEmail(), userDto.getUserProfile().getEmail());
+        assertEquals(activeUserProfile.getAge(), userDto.getUserProfile().getAge());
     }
 }

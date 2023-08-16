@@ -1,4 +1,4 @@
-package com.pba.authservice.controller.request;
+package com.pba.authservice.persistance.model.dtos;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,8 +9,10 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-public class PendingUserCreateRequest {
-    private String username;
-    private String password;
+public class UserProfileDto {
+    private String firstName;
+    private String lastName;
     private String email;
+    private String country;
+    private Integer age;
 }

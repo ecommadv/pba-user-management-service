@@ -1,7 +1,6 @@
 package com.pba.authservice.persistance.repository;
 
 import com.pba.authservice.persistance.model.ActiveUser;
-import com.pba.authservice.persistance.model.dtos.ActiveUserDto;
 
 import java.util.Optional;
 import java.util.List;

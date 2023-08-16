@@ -3,11 +3,14 @@ package com.pba.authservice.facade;
 import com.pba.authservice.mapper.ActiveUserMapper;
 import com.pba.authservice.mapper.PendingUserMapper;
 import com.pba.authservice.persistance.model.ActiveUser;
+import com.pba.authservice.persistance.model.ActiveUserProfile;
 import com.pba.authservice.persistance.model.PendingUser;
-import com.pba.authservice.persistance.model.dtos.ActiveUserDto;
+import com.pba.authservice.persistance.model.PendingUserProfile;
+import com.pba.authservice.persistance.model.dtos.UserDto;
+import com.pba.authservice.persistance.model.dtos.UserProfileDto;
 import com.pba.authservice.service.ActiveUserService;
 import com.pba.authservice.service.PendingUserService;
-import com.pba.authservice.controller.request.PendingUserCreateRequest;
+import com.pba.authservice.controller.request.UserCreateRequest;
 import org.springframework.stereotype.Component;
 
 import java.util.UUID;
@@ -27,14 +30,20 @@ public class UserFacadeImpl implements UserFacade {
     }
 
     @Override
-    public void addPendingUser(PendingUserCreateRequest pendingUserRequest) {
-        PendingUser pendingUser = pendingUserMapper.toPendingUser(pendingUserRequest);
-        pendingUserService.addPendingUser(pendingUser);
+    public void registerUser(UserCreateRequest userCreateRequest) {
+        PendingUser pendingUser = pendingUserMapper.toPendingUser(userCreateRequest);
+        PendingUser savedPendingUser = pendingUserService.addPendingUser(pendingUser);
+
+        PendingUserProfile pendingUserProfile = pendingUserMapper.toPendingUserProfile(userCreateRequest, savedPendingUser.getId());
+        pendingUserService.addPendingUserProfile(pendingUserProfile);
     }
 
     @Override
-    public ActiveUserDto getActiveUser(UUID uid) {
-        ActiveUser activeUser = activeUserService.getByUid(uid);
-        return activeUserMapper.toActiveUserDto(activeUser);
+    public UserDto getUser(UUID uid) {
+        ActiveUser activeUser = activeUserService.getUserByUid(uid);
+        ActiveUserProfile activeUserProfile = activeUserService.getProfileByUserId(activeUser.getId());
+
+        UserProfileDto userProfileDto = activeUserMapper.toUserProfileDto(activeUserProfile);
+        return activeUserMapper.toUserDto(activeUser, userProfileDto);
     }
 }

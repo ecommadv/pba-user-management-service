@@ -28,7 +28,7 @@ public class ActiveUserServiceUnitTest {
         when(activeUserDao.save(activeUser)).thenReturn(activeUser);
 
         // when
-        ActiveUser result = activeUserService.addActiveUser(activeUser);
+        ActiveUser result = activeUserService.addUser(activeUser);
 
         // then
         Assertions.assertEquals(activeUser, result);
