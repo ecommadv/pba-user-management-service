@@ -36,4 +36,9 @@ public class ActiveUserServiceImpl implements ActiveUserService {
         return activeUserProfileDao.getByUserId(id)
                 .orElseThrow(() -> new AuthServiceException(String.format("User profile with user id %d does not exist!", id)));
     }
+
+    @Override
+    public ActiveUserProfile addUserProfile(ActiveUserProfile activeUserProfile) {
+        return activeUserProfileDao.save(activeUserProfile);
+    }
 }

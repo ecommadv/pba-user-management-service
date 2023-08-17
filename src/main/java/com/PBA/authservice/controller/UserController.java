@@ -19,7 +19,7 @@ public interface UserController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Created")
             })
-    @PostMapping("/register")
+    @PostMapping
     public ResponseEntity<Void> registerUser(
             @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "User to register")
             @RequestBody UserCreateRequest userCreateRequest);
@@ -34,4 +34,15 @@ public interface UserController {
     })
     @GetMapping("/{uid}")
     public ResponseEntity<UserDto> getActiveUser(@PathVariable("uid") UUID uid);
+
+    @Operation(summary = """
+            Validates the user with the given validation code, if they exist.
+            """)
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "OK"),
+            @ApiResponse(responseCode = "400", description = "Bad Request"),
+            @ApiResponse(responseCode = "404", description = "Not Found")
+    })
+    @PostMapping("/{uid}")
+    public ResponseEntity<UserDto> validateUser(@PathVariable("uid") UUID validationCode);
 }

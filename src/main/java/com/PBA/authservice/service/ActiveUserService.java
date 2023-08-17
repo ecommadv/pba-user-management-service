@@ -7,7 +7,7 @@ import java.util.UUID;
 
 public interface ActiveUserService {
     public ActiveUser addUser(ActiveUser activeUser);
-
     public ActiveUser getUserByUid(UUID uid);
     public ActiveUserProfile getProfileByUserId(Long id);
+    public ActiveUserProfile addUserProfile(ActiveUserProfile activeUserProfile);
 }
