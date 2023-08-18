@@ -31,14 +31,14 @@ public class PendingUserProfileSqlProviderImpl implements PendingUserProfileSqlP
     @Override
     public String selectAll() {
         return """
-               SELECT * FROM pending_user
+               SELECT * FROM pending_user_profile
                """;
     }
 
     @Override
     public String deleteById() {
         return """
-                DELETE FROM pending_user
+                DELETE FROM pending_user_profile
                 WHERE id = ?
                """;
     }
@@ -46,8 +46,8 @@ public class PendingUserProfileSqlProviderImpl implements PendingUserProfileSqlP
     @Override
     public String update() {
         return """
-                UPDATE pending_user
-                SET uid = ?, username = ?, password = ?, email = ?, created_at = ?, validation_code = ?
+                UPDATE pending_user_profile
+                SET firstname = ?, lastname = ?, email = ?, user_id = ?
                 WHERE id = ?
                """;
     }

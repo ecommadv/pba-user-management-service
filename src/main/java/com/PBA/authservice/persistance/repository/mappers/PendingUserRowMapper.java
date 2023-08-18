@@ -1,6 +1,5 @@
 package com.pba.authservice.persistance.repository.mappers;
 
-import com.pba.authservice.persistance.model.ActiveUser;
 import com.pba.authservice.persistance.model.PendingUser;
 import org.springframework.jdbc.core.RowMapper;
 

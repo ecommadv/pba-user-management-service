@@ -1,11 +1,9 @@
 package com.pba.authservice.persistance.repository;
 
 import com.pba.authservice.exceptions.AuthDaoException;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jdbc.core.JdbcTemplate;
 import com.pba.authservice.persistance.repository.sql.SqlProvider;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
-import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 
 import java.lang.reflect.Field;

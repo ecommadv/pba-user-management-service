@@ -1,4 +1,4 @@
-package com.pba.authservice.persistance.model;
+package com.pba.authservice.persistance.model.dtos;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,12 +9,10 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-public class ActiveUserProfile {
-    private Long id;
+public class UserProfileDto {
     private String firstName;
     private String lastName;
     private String email;
     private String country;
     private Integer age;
-    private Long userId;
 }

@@ -1,20 +1,14 @@
 package com.pba.authservice.integration;
 
 import com.pba.authservice.exceptions.AuthDaoException;
+import com.pba.authservice.mockgenerators.ActiveUserMockGenerator;
 import com.pba.authservice.mockgenerators.PendingUserMockGenerator;
+import com.pba.authservice.persistance.model.ActiveUser;
 import com.pba.authservice.persistance.model.PendingUser;
 import com.pba.authservice.persistance.repository.PendingUserDao;
-import jakarta.validation.constraints.NotNull;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
-import org.springframework.test.context.jdbc.Sql;
-import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.util.Optional;
 import java.util.Random;
@@ -71,10 +65,10 @@ public class PendingUserDaoIntegrationTest extends BaseDaoIntegrationTest {
     @Test
     public void testGetAbsentById() {
         // given
-        UUID uid = UUID.randomUUID();
+        Long absentId = new Random().nextLong();
 
         // when
-        Optional<PendingUser> result = pendingUserDao.getById(2L);
+        Optional<PendingUser> result = pendingUserDao.getById(absentId);
 
         // then
         Assertions.assertTrue(result.isEmpty());
@@ -108,15 +102,14 @@ public class PendingUserDaoIntegrationTest extends BaseDaoIntegrationTest {
         // given
         PendingUser pendingUser = PendingUserMockGenerator.generateMockPendingUser();
         PendingUser newPendingUser = PendingUserMockGenerator.generateMockPendingUser();
-        newPendingUser.setUid(pendingUser.getUid());
-        pendingUserDao.save(pendingUser);
+        PendingUser pendingUserResult = pendingUserDao.save(pendingUser);
 
         // when
-        PendingUser result = pendingUserDao.update(newPendingUser, 2L);
+        PendingUser result = pendingUserDao.update(newPendingUser, pendingUserResult.getId());
 
         // then
-        Assertions.assertEquals(newPendingUser.getUid(), newPendingUser.getUid());
-        Assertions.assertEquals(newPendingUser.getUsername(), pendingUserDao.getById(2L).get().getUsername());
+        Assertions.assertEquals(newPendingUser.getUid(), result.getUid());
+        Assertions.assertEquals(newPendingUser.getUid(), pendingUserDao.getById(pendingUserResult.getId()).get().getUid());
     }
 
     @Test
