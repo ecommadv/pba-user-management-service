@@ -3,8 +3,6 @@ import com.pba.authservice.persistance.model.ActiveUser;
 import com.pba.authservice.persistance.model.ActiveUserProfile;
 import com.pba.authservice.persistance.model.dtos.UserDto;
 import com.pba.authservice.persistance.model.dtos.UserProfileDto;
-import net.bytebuddy.utility.RandomString;
-import net.moznion.random.string.RandomStringGenerator;
 
 import java.util.Collections;
 import java.util.List;

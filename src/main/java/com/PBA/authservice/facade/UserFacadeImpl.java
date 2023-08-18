@@ -1,5 +1,6 @@
 package com.pba.authservice.facade;
 
+import com.pba.authservice.exceptions.UserNotFoundException;
 import com.pba.authservice.mapper.ActiveUserMapper;
 import com.pba.authservice.mapper.PendingUserMapper;
 import com.pba.authservice.persistance.model.ActiveUser;
@@ -9,10 +10,11 @@ import com.pba.authservice.persistance.model.PendingUserProfile;
 import com.pba.authservice.persistance.model.dtos.UserDto;
 import com.pba.authservice.persistance.model.dtos.UserProfileDto;
 import com.pba.authservice.service.ActiveUserService;
+import com.pba.authservice.service.EmailService;
 import com.pba.authservice.service.PendingUserService;
 import com.pba.authservice.controller.request.UserCreateRequest;
-import com.pba.authservice.validator.UserValidator;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.UUID;
 
@@ -22,24 +24,25 @@ public class UserFacadeImpl implements UserFacade {
     private final PendingUserMapper pendingUserMapper;
     private final ActiveUserService activeUserService;
     private final ActiveUserMapper activeUserMapper;
-    private final UserValidator userValidator;
+    private final EmailService emailService;
 
-    public UserFacadeImpl(PendingUserService pendingUserService, PendingUserMapper pendingUserMapper, ActiveUserService activeUserService, ActiveUserMapper activeUserMapper, UserValidator userValidator) {
+    public UserFacadeImpl(PendingUserService pendingUserService, PendingUserMapper pendingUserMapper, ActiveUserService activeUserService, ActiveUserMapper activeUserMapper, EmailService emailService) {
         this.pendingUserService = pendingUserService;
         this.pendingUserMapper = pendingUserMapper;
         this.activeUserService = activeUserService;
         this.activeUserMapper = activeUserMapper;
-        this.userValidator = userValidator;
+        this.emailService = emailService;
     }
 
     @Override
     public void registerUser(UserCreateRequest userCreateRequest) {
-        userValidator.validateUserCreateRequest(userCreateRequest);
         PendingUser pendingUser = pendingUserMapper.toPendingUser(userCreateRequest);
         PendingUser savedPendingUser = pendingUserService.addPendingUser(pendingUser);
 
         PendingUserProfile pendingUserProfile = pendingUserMapper.toPendingUserProfile(userCreateRequest, savedPendingUser.getId());
         pendingUserService.addPendingUserProfile(pendingUserProfile);
+
+        emailService.sendVerificationEmail(userCreateRequest.getEmail(), savedPendingUser.getValidationCode());
     }
 
     @Override
@@ -52,19 +55,30 @@ public class UserFacadeImpl implements UserFacade {
     }
 
     @Override
+    @Transactional
     public UserDto verifyUser(UUID validationCode) {
         PendingUser userToValidate = pendingUserService.getPendingUserByValidationCode(validationCode);
-        userValidator.validatePendingUser(userToValidate);
+        this.validatePendingUser(userToValidate);
         ActiveUser activeUser = pendingUserMapper.toActiveUser(userToValidate);
-
         PendingUserProfile pendingUserProfile = pendingUserService.getPendingUserProfileByUserId(userToValidate.getId());
-        pendingUserService.deletePendingProfileById(pendingUserProfile.getId());
-        pendingUserService.deletePendingUserById(userToValidate.getId());
+        this.deletePendingUser(userToValidate, pendingUserProfile);
 
         ActiveUser savedActiveUser = activeUserService.addUser(activeUser);
         ActiveUserProfile activeUserProfile = pendingUserMapper.toActiveUserProfile(pendingUserProfile, savedActiveUser.getId());
         ActiveUserProfile savedUserProfile = activeUserService.addUserProfile(activeUserProfile);
         UserProfileDto userProfileDto = activeUserMapper.toUserProfileDto(savedUserProfile);
         return activeUserMapper.toUserDto(savedActiveUser, userProfileDto);
+    }
+
+    private void deletePendingUser(PendingUser pendingUser, PendingUserProfile pendingUserProfile) {
+        pendingUserService.deletePendingProfileById(pendingUserProfile.getId());
+        pendingUserService.deletePendingUserById(pendingUser.getId());
+    }
+
+    private void validatePendingUser(PendingUser pendingUser) {
+        if (pendingUser.isExpired()) {
+            String errorMessage = String.format("Pending user with validation code %s has expired", pendingUser.getValidationCode());
+            throw new UserNotFoundException(errorMessage);
+        }
     }
 }

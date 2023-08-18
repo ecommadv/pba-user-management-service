@@ -30,7 +30,7 @@ public class UserControllerImpl implements UserController {
     }
 
     @Override
-    public ResponseEntity<UserDto> validateUser(UUID validationCode) {
+    public ResponseEntity<UserDto> activateUser(UUID validationCode) {
         UserDto userDto = userFacade.verifyUser(validationCode);
         return new ResponseEntity<>(userDto, HttpStatus.OK);
     }

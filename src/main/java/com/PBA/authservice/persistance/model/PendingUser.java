@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.UUID;
 
 @Builder
@@ -21,5 +22,9 @@ public class PendingUser {
     private String email;
     private LocalDateTime createdAt;
     private UUID validationCode;
+
+    public boolean isExpired() {
+        return createdAt.until(LocalDateTime.now(), ChronoUnit.HOURS) > 24;
+    }
 }
 

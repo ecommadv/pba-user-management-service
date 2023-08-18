@@ -3,7 +3,6 @@ package com.pba.authservice.mockgenerators;
 import com.pba.authservice.persistance.model.PendingUser;
 import com.pba.authservice.controller.request.UserCreateRequest;
 import com.pba.authservice.persistance.model.PendingUserProfile;
-import net.moznion.random.string.RandomStringGenerator;
 
 import java.sql.Timestamp;
 import java.time.Instant;

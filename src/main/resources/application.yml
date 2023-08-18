@@ -5,3 +5,14 @@ spring:
     username: postgres
     password: larlarlar
     driverClassName: org.postgresql.Driver
+  mail:
+    host: sandbox.smtp.mailtrap.io
+    port: 2525
+    username: a4db8735570159
+    password: 423c01f73ee05c
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true

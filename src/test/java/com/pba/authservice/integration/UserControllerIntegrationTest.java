@@ -98,7 +98,7 @@ public class UserControllerIntegrationTest extends BaseControllerIntegrationTest
         pendingUserDao.save(pendingUser);
         PendingUserProfile pendingUserProfile = PendingUserMockGenerator.generateMockPendingUserProfile(pendingUserDao.getAll());
         pendingUserProfileDao.save(pendingUserProfile);
-        String validateUserEndpoint = String.format("/api/user/%s", pendingUser.getValidationCode());
+        String validateUserEndpoint = String.format("/api/user/activate/%s", pendingUser.getValidationCode());
 
         // when
         MvcResult result = mockMvc.perform(MockMvcRequestBuilders.post(validateUserEndpoint))

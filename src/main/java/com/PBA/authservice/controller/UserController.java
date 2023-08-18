@@ -5,6 +5,7 @@ import com.pba.authservice.persistance.model.dtos.UserDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -22,7 +23,7 @@ public interface UserController {
     @PostMapping
     public ResponseEntity<Void> registerUser(
             @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "User to register")
-            @RequestBody UserCreateRequest userCreateRequest);
+            @Valid @RequestBody UserCreateRequest userCreateRequest);
 
     @Operation(summary = """
             Retrieves from the system the active user with the specified uid, if they exist in the system.
@@ -43,6 +44,6 @@ public interface UserController {
             @ApiResponse(responseCode = "400", description = "Bad Request"),
             @ApiResponse(responseCode = "404", description = "Not Found")
     })
-    @PostMapping("/{uid}")
-    public ResponseEntity<UserDto> validateUser(@PathVariable("uid") UUID validationCode);
+    @PostMapping("/activate/{code}")
+    public ResponseEntity<UserDto> activateUser(@PathVariable("code") UUID validationCode);
 }
