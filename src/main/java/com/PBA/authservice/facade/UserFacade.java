@@ -8,4 +8,5 @@ import java.util.UUID;
 public interface UserFacade {
     public void registerUser(UserCreateRequest userCreateRequest);
     public UserDto getUser(UUID uid);
+    public UserDto verifyUser(UUID validationCode);
 }

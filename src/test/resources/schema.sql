@@ -22,8 +22,8 @@ CREATE TABLE IF NOT EXISTS active_user_profile (
     firstname character varying NOT NULL,
     lastname character varying NOT NULL,
     email character varying NOT NULL,
-    country character varying NOT NULL,
-    age integer NOT NULL,
+    country character varying,
+    age integer,
     user_id bigint NOT NULL,
     CONSTRAINT fk_user
         FOREIGN KEY (user_id)

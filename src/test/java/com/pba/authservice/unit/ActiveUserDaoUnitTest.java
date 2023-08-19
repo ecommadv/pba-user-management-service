@@ -1,6 +1,7 @@
 package com.pba.authservice.unit;
 
 import com.pba.authservice.exceptions.AuthDaoException;
+import com.pba.authservice.exceptions.AuthDaoNotFoundException;
 import com.pba.authservice.mockgenerators.ActiveUserMockGenerator;
 import com.pba.authservice.persistance.model.ActiveUser;
 import com.pba.authservice.persistance.repository.ActiveUserDaoImpl;
@@ -124,8 +125,8 @@ public class ActiveUserDaoUnitTest {
         when(jdbcTemplate.update("delete", absentId)).thenReturn(0);
 
         assertThatThrownBy(() -> activeUserDao.deleteById(absentId))
-                .isInstanceOf(AuthDaoException.class)
-                .hasMessage(String.format("Object with id %s is not stored!", absentId.toString()));
+                .isInstanceOf(AuthDaoNotFoundException.class)
+                .hasMessage("Object not found");
     }
 
     @Test
@@ -154,8 +155,8 @@ public class ActiveUserDaoUnitTest {
         when(jdbcTemplate.update("update", absentActiveUser.getUid(), absentActiveUser.getUsername(), absentActiveUser.getPassword(), id)).thenReturn(0);
 
         assertThatThrownBy(() -> activeUserDao.update(absentActiveUser, id))
-                .isInstanceOf(AuthDaoException.class)
-                .hasMessage(String.format("Object with id %s is not stored!", id.toString()));
+                .isInstanceOf(AuthDaoNotFoundException.class)
+                .hasMessage("Object not found");
     }
 
     private void setUpGetById(ActiveUser activeUser) {

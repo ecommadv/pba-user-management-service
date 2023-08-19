@@ -18,9 +18,9 @@ public class PendingUserMockGenerator {
         return PendingUser.builder()
                 .id(new Random().nextLong())
                 .uid(UUID.randomUUID())
-                .username(UUID.randomUUID().toString())
-                .password(UUID.randomUUID().toString())
-                .email(UUID.randomUUID().toString())
+                .username(generateMockUsername())
+                .password(generateMockPassword())
+                .email(generateMockEmail())
                 .createdAt(Timestamp.from(Instant.now()).toLocalDateTime())
                 .validationCode(UUID.randomUUID())
                 .build();
@@ -34,11 +34,21 @@ public class PendingUserMockGenerator {
 
     public static UserCreateRequest generateMockUserCreateRequest() {
         return UserCreateRequest.builder()
-                .username(UUID.randomUUID().toString())
-                .password(UUID.randomUUID().toString())
+                .username(generateMockUsername())
+                .password(generateMockPassword())
                 .firstName(UUID.randomUUID().toString())
                 .lastName(UUID.randomUUID().toString())
-                .email(UUID.randomUUID().toString())
+                .email(generateMockEmail())
+                .build();
+    }
+
+    public static UserCreateRequest generateInvalidUserCreateRequest() {
+        return UserCreateRequest.builder()
+                .username("")
+                .password("")
+                .firstName("")
+                .lastName("")
+                .email("")
                 .build();
     }
 
@@ -50,7 +60,7 @@ public class PendingUserMockGenerator {
                 .id(new Random().nextLong())
                 .firstName(UUID.randomUUID().toString())
                 .lastName(UUID.randomUUID().toString())
-                .email(UUID.randomUUID().toString())
+                .email(generateMockEmail())
                 .userId(getRandomPendingUserId(pendingUserList))
                 .build();
     }
@@ -68,5 +78,32 @@ public class PendingUserMockGenerator {
         return Stream.generate(() -> PendingUserMockGenerator.generateMockPendingUserProfile(pendingUserList))
                 .limit(size)
                 .collect(Collectors.toList());
+    }
+
+    private static String generateMockEmail() {
+        return String.format(
+                "%s@%s.%s",
+                generateRandomString(3),
+                generateRandomString(3),
+                generateRandomString(3)
+        );
+    }
+
+    private static String generateMockPassword() {
+        return String.format("@%s", generateRandomString(7));
+    }
+
+    private static String generateMockUsername() {
+        return generateRandomString(10);
+    }
+
+    private static String generateRandomString(int length) {
+        String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+        Random random = new Random();
+
+        return random.ints(length, 0, chars.length())
+                .mapToObj(chars::charAt)
+                .map(Object::toString)
+                .collect(Collectors.joining());
     }
 }

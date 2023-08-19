@@ -53,4 +53,14 @@ public class PendingUserSqlProviderImpl implements PendingUserSqlProvider {
                 WHERE id = ?
                """;
     }
+
+    @Override
+    public String selectByValidationCode() {
+        return """
+                SELECT id, uid, username, password, email, created_at, validation_code
+                FROM pending_user
+                WHERE
+                    validation_code = ?
+                """;
+    }
 }

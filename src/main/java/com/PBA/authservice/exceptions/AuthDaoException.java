@@ -1,7 +1,11 @@
 package com.pba.authservice.exceptions;
 
-public class AuthDaoException extends RuntimeException {
-    public AuthDaoException(String message) {
-        super(message);
+import org.springframework.http.HttpStatus;
+
+import java.util.Map;
+
+public class AuthDaoException extends AuthException {
+    public AuthDaoException(String code, String message, HttpStatus httpStatus) {
+        super(code, message, httpStatus);
     }
 }

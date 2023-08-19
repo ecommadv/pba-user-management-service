@@ -1,6 +1,7 @@
 package com.pba.authservice.service;
 
-import com.pba.authservice.exceptions.AuthServiceException;
+import com.pba.authservice.exceptions.ErrorCodes;
+import com.pba.authservice.exceptions.UserNotFoundException;
 import com.pba.authservice.persistance.model.ActiveUser;
 import com.pba.authservice.persistance.model.ActiveUserProfile;
 import com.pba.authservice.persistance.repository.ActiveUserDao;
@@ -8,6 +9,7 @@ import com.pba.authservice.persistance.repository.ActiveUserProfileDao;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Map;
 import java.util.UUID;
 
 @Service
@@ -28,12 +30,17 @@ public class ActiveUserServiceImpl implements ActiveUserService {
     @Override
     public ActiveUser getUserByUid(UUID uid) {
         return activeUserDao.getByUid(uid)
-                .orElseThrow(() -> new AuthServiceException(String.format("User with uid %s does not exist!", uid.toString())));
+                .orElseThrow(() -> new UserNotFoundException(ErrorCodes.USER_NOT_FOUND, String.format("User with uid %s does not exist!", uid)));
     }
 
     @Override
     public ActiveUserProfile getProfileByUserId(Long id) {
         return activeUserProfileDao.getByUserId(id)
-                .orElseThrow(() -> new AuthServiceException(String.format("User profile with user id %d does not exist!", id)));
+                .orElseThrow(() -> new UserNotFoundException(ErrorCodes.USER_NOT_FOUND, String.format("User with id %d does not exist!", id)));
+    }
+
+    @Override
+    public ActiveUserProfile addUserProfile(ActiveUserProfile activeUserProfile) {
+        return activeUserProfileDao.save(activeUserProfile);
     }
 }

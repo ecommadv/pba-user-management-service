@@ -13,6 +13,7 @@ import com.pba.authservice.persistance.model.PendingUserProfile;
 import com.pba.authservice.persistance.model.dtos.UserDto;
 import com.pba.authservice.persistance.model.dtos.UserProfileDto;
 import com.pba.authservice.service.ActiveUserService;
+import com.pba.authservice.service.EmailService;
 import com.pba.authservice.service.PendingUserService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -43,6 +44,9 @@ public class UserFacadeUnitTest {
     @Mock
     private ActiveUserMapper activeUserMapper;
 
+    @Mock
+    private EmailService emailService;
+
     @Test
     public void testRegisterUser() {
         // given
@@ -62,6 +66,7 @@ public class UserFacadeUnitTest {
         verify(pendingUserService).addPendingUser(pendingUser);
         verify(pendingUserMapper).toPendingUserProfile(userCreateRequest, pendingUser.getId());
         verify(pendingUserService).addPendingUserProfile(pendingUserProfile);
+        verify(emailService).sendVerificationEmail(userCreateRequest.getEmail(), pendingUser.getValidationCode());
         verifyNoMoreInteractions(pendingUserMapper, pendingUserService);
     }
 

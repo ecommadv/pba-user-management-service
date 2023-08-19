@@ -1,7 +1,10 @@
 package com.pba.authservice.persistance.repository;
 
 import com.pba.authservice.exceptions.AuthDaoException;
+import com.pba.authservice.exceptions.AuthDaoNotFoundException;
+import com.pba.authservice.exceptions.ErrorCodes;
 import com.pba.authservice.persistance.repository.sql.SqlProvider;
+import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.KeyHolder;
@@ -60,7 +63,7 @@ public abstract class JdbcRepository<ObjectT, IdT> {
         String sql = sqlProvider.deleteById();
         int rowCount = jdbcTemplate.update(sql, id);
         if (rowCount == 0) {
-            throw new AuthDaoException(String.format("Object with id %s is not stored!", id.toString()));
+            throw new AuthDaoNotFoundException(ErrorCodes.OBJ_NOT_FOUND, "Object not found");
         }
         return obj.get();
     }
@@ -71,7 +74,7 @@ public abstract class JdbcRepository<ObjectT, IdT> {
         args.add(id);
         int rowCount = jdbcTemplate.update(sql, args.toArray());
         if (rowCount == 0) {
-            throw new AuthDaoException(String.format("Object with id %s is not stored!", id.toString()));
+            throw new AuthDaoNotFoundException(ErrorCodes.OBJ_NOT_FOUND, "Object not found");
         }
         return obj;
     }
@@ -88,7 +91,7 @@ public abstract class JdbcRepository<ObjectT, IdT> {
         try {
             return field.get(obj);
         } catch (IllegalAccessException e) {
-            throw new AuthDaoException(e.getMessage());
+            throw new AuthDaoException(ErrorCodes.FIELD_EXTRACTION, "Error when extracting field of object", HttpStatus.BAD_REQUEST);
         }
     }
 }

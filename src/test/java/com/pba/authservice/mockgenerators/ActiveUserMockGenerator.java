@@ -1,5 +1,4 @@
 package com.pba.authservice.mockgenerators;
-
 import com.pba.authservice.persistance.model.ActiveUser;
 import com.pba.authservice.persistance.model.ActiveUserProfile;
 import com.pba.authservice.persistance.model.dtos.UserDto;
@@ -17,8 +16,8 @@ public class ActiveUserMockGenerator {
         return ActiveUser.builder()
                 .id(new Random().nextLong())
                 .uid(UUID.randomUUID())
-                .username(UUID.randomUUID().toString())
-                .password(UUID.randomUUID().toString())
+                .username(generateMockUsername())
+                .password(generateMockPassword())
                 .build();
     }
 
@@ -31,7 +30,7 @@ public class ActiveUserMockGenerator {
     public static UserDto generateMockActiveUserDto() {
         return UserDto.builder()
                 .uid(UUID.randomUUID())
-                .username(UUID.randomUUID().toString())
+                .username(generateMockUsername())
                 .build();
     }
 
@@ -40,7 +39,7 @@ public class ActiveUserMockGenerator {
                 .id(new Random().nextLong())
                 .firstName(UUID.randomUUID().toString())
                 .lastName(UUID.randomUUID().toString())
-                .email(UUID.randomUUID().toString())
+                .email(generateMockEmail())
                 .country(UUID.randomUUID().toString())
                 .age(new Random().nextInt())
                 .userId(userId)
@@ -70,9 +69,36 @@ public class ActiveUserMockGenerator {
         return UserProfileDto.builder()
                 .firstName(UUID.randomUUID().toString())
                 .lastName(UUID.randomUUID().toString())
-                .email(UUID.randomUUID().toString())
+                .email(generateMockEmail())
                 .country(UUID.randomUUID().toString())
                 .age(new Random().nextInt())
                 .build();
+    }
+
+    private static String generateMockEmail() {
+        return String.format(
+                "%s@%s.%s",
+                generateRandomString(3),
+                generateRandomString(3),
+                generateRandomString(3)
+        );
+    }
+
+    private static String generateMockPassword() {
+        return String.format("@%s", generateRandomString(7));
+    }
+
+    private static String generateMockUsername() {
+        return generateRandomString(10);
+    }
+
+    private static String generateRandomString(int length) {
+        String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+        Random random = new Random();
+
+        return random.ints(length, 0, chars.length())
+                .mapToObj(chars::charAt)
+                .map(Object::toString)
+                .collect(Collectors.joining());
     }
 }
