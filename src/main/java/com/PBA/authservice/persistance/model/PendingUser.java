@@ -24,7 +24,7 @@ public class PendingUser {
     private UUID validationCode;
 
     public boolean isExpired() {
-        return createdAt.until(LocalDateTime.now(), ChronoUnit.HOURS) > 24;
+        return createdAt.isBefore(LocalDateTime.now().minusDays(1));
     }
 }
 

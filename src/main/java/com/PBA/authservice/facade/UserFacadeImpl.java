@@ -13,9 +13,11 @@ import com.pba.authservice.service.ActiveUserService;
 import com.pba.authservice.service.EmailService;
 import com.pba.authservice.service.PendingUserService;
 import com.pba.authservice.controller.request.UserCreateRequest;
+import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Map;
 import java.util.UUID;
 
 @Component
@@ -35,6 +37,7 @@ public class UserFacadeImpl implements UserFacade {
     }
 
     @Override
+    @Transactional
     public void registerUser(UserCreateRequest userCreateRequest) {
         PendingUser pendingUser = pendingUserMapper.toPendingUser(userCreateRequest);
         PendingUser savedPendingUser = pendingUserService.addPendingUser(pendingUser);
@@ -59,13 +62,12 @@ public class UserFacadeImpl implements UserFacade {
     public UserDto verifyUser(UUID validationCode) {
         PendingUser userToValidate = pendingUserService.getPendingUserByValidationCode(validationCode);
         this.validatePendingUser(userToValidate);
-        ActiveUser activeUser = pendingUserMapper.toActiveUser(userToValidate);
         PendingUserProfile pendingUserProfile = pendingUserService.getPendingUserProfileByUserId(userToValidate.getId());
         this.deletePendingUser(userToValidate, pendingUserProfile);
 
-        ActiveUser savedActiveUser = activeUserService.addUser(activeUser);
-        ActiveUserProfile activeUserProfile = pendingUserMapper.toActiveUserProfile(pendingUserProfile, savedActiveUser.getId());
-        ActiveUserProfile savedUserProfile = activeUserService.addUserProfile(activeUserProfile);
+        Pair<ActiveUser, ActiveUserProfile> savedUserAndProfile = this.addActiveUser(userToValidate, pendingUserProfile);
+        ActiveUser savedActiveUser = savedUserAndProfile.getFirst();
+        ActiveUserProfile savedUserProfile = savedUserAndProfile.getSecond();
         UserProfileDto userProfileDto = activeUserMapper.toUserProfileDto(savedUserProfile);
         return activeUserMapper.toUserDto(savedActiveUser, userProfileDto);
     }
@@ -78,7 +80,15 @@ public class UserFacadeImpl implements UserFacade {
     private void validatePendingUser(PendingUser pendingUser) {
         if (pendingUser.isExpired()) {
             String errorMessage = String.format("Pending user with validation code %s has expired", pendingUser.getValidationCode());
-            throw new UserNotFoundException(errorMessage);
+            throw new UserNotFoundException(errorMessage, Map.of("user.not.found", errorMessage));
         }
+    }
+
+    private Pair<ActiveUser, ActiveUserProfile> addActiveUser(PendingUser pendingUser, PendingUserProfile pendingUserProfile) {
+        ActiveUser activeUser = pendingUserMapper.toActiveUser(pendingUser);
+        ActiveUser savedActiveUser = activeUserService.addUser(activeUser);
+        ActiveUserProfile activeUserProfile = pendingUserMapper.toActiveUserProfile(pendingUserProfile, savedActiveUser.getId());
+        ActiveUserProfile savedUserProfile = activeUserService.addUserProfile(activeUserProfile);
+        return Pair.of(savedActiveUser, savedUserProfile);
     }
 }

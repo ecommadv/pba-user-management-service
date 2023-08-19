@@ -106,7 +106,7 @@ public class PendingUserProfileDaoIntegrationTest extends BaseDaoIntegrationTest
 
         assertThatThrownBy(() -> pendingUserProfileDao.deleteById(id))
                 .isInstanceOf(AuthDaoException.class)
-                .hasMessage(String.format("Object with id %d is not stored!", id));
+                .hasMessage("Object not found");
     }
 
     @Test
@@ -135,7 +135,7 @@ public class PendingUserProfileDaoIntegrationTest extends BaseDaoIntegrationTest
 
         assertThatThrownBy(() -> pendingUserProfileDao.update(pendingUserProfile, id))
                 .isInstanceOf(AuthDaoException.class)
-                .hasMessage(String.format("Object with id %d is not stored!", id));
+                .hasMessage("Object not found");
     }
 
     private void addMockListOfPendingUsers() {

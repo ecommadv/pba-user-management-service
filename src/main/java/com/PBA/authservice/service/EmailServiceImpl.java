@@ -1,12 +1,18 @@
 package com.pba.authservice.service;
 
-import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.env.Environment;
 import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
+import org.springframework.util.ResourceUtils;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
 import java.util.UUID;
 
 @Service
@@ -14,38 +20,61 @@ public class EmailServiceImpl implements EmailService {
     @Autowired
     private JavaMailSender mailSender;
 
+    @Autowired
+    private Environment environment;
+
+    private Logger logger = LoggerFactory.getLogger(EmailServiceImpl.class);
+
     @Override
     public void sendVerificationEmail(String to, UUID validationCode) {
         String subject = "Email verification";
-        String verificationLink = String.format("http://localhost:8080/api/user/%s", validationCode);
+        String verificationLink = String.format(environment.getProperty("spring.mail.verification_link"), validationCode);
 
-        String htmlContent = String.format("""
-                <form id="verificationForm" action="%s" method="post">
-                    <input type="submit" value="Verify account">
-                </form>
-                <script>
-                    document.getElementById('verificationForm').submit();
-                </script>
-                """, verificationLink);
-        String body = String.format("""
+        String body = """
                 Click the following button to verify your account:
                 
                 %s
-                """, htmlContent);
+                """;
 
-        this.sendHtmlEmail(to, subject, body);
+        this.sendEmailFromTemplate(to, subject, body, verificationLink);
     }
 
-    private void sendHtmlEmail(String to, String subject, String body) {
+    private void sendEmailFromTemplate(String to, String subject, String body, String verificationLink) {
         MimeMessage message = mailSender.createMimeMessage();
+
         try {
-            MimeMessageHelper helper = new MimeMessageHelper(message, true);
-            helper.setTo(to);
-            helper.setSubject(subject);
-            helper.setText(body, true);
-            mailSender.send(message);
-        } catch (MessagingException e) {
-            e.printStackTrace();
+            message.setRecipients(MimeMessage.RecipientType.TO, to);
+            message.setSubject(subject);
+
+            File htmlFile = ResourceUtils.getFile("classpath:email_content.html");
+            String htmlTemplate = readFile(htmlFile);
+
+            htmlTemplate = htmlTemplate.replace("${verification_link}", verificationLink);
+
+            message.setContent(String.format(body, htmlTemplate), "text/html; charset=utf-8");
         }
+        catch(Exception ex) {
+            logger.error("Error when handling email message", ex);
+        }
+
+        mailSender.send(message);
+    }
+
+    private String readFile(File file) {
+        StringBuilder content = new StringBuilder();
+        String line;
+
+        try {
+            BufferedReader br = new BufferedReader(new FileReader(file));
+            while((line = br.readLine()) != null){
+                content.append(line);
+            }
+            br.close();
+        }
+        catch(Exception ex) {
+            logger.error("Error when handling email_content.html file", ex);
+        }
+
+        return content.toString();
     }
 }

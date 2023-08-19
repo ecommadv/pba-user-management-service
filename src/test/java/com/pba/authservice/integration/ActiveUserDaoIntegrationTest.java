@@ -92,7 +92,7 @@ public class ActiveUserDaoIntegrationTest extends BaseDaoIntegrationTest {
 
         assertThatThrownBy(() -> activeUserDao.deleteById(id))
                 .isInstanceOf(AuthDaoException.class)
-                .hasMessage(String.format("Object with id %s is not stored!", id.toString()));
+                .hasMessage("Object not found");
     }
 
     @Test
@@ -117,7 +117,7 @@ public class ActiveUserDaoIntegrationTest extends BaseDaoIntegrationTest {
 
         assertThatThrownBy(() -> activeUserDao.update(activeUser, id))
                 .isInstanceOf(AuthDaoException.class)
-                .hasMessage(String.format("Object with id %s is not stored!", id.toString()));
+                .hasMessage("Object not found");
     }
 
     private void addMockListOfActiveUsers(List<ActiveUser> activeUserList) {

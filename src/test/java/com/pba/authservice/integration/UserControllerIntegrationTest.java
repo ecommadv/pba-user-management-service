@@ -92,7 +92,7 @@ public class UserControllerIntegrationTest extends BaseControllerIntegrationTest
     }
 
     @Test
-    public void testValidateUser() throws Exception {
+    public void testActivate() throws Exception {
         // given
         PendingUser pendingUser = PendingUserMockGenerator.generateMockPendingUser();
         pendingUserDao.save(pendingUser);
@@ -102,7 +102,7 @@ public class UserControllerIntegrationTest extends BaseControllerIntegrationTest
 
         // when
         MvcResult result = mockMvc.perform(MockMvcRequestBuilders.post(validateUserEndpoint))
-                .andExpect(status().isOk())
+                .andExpect(status().isCreated())
                 .andReturn();
 
         // then

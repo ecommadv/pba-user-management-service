@@ -125,7 +125,7 @@ public class PendingUserDaoUnitTest {
 
         assertThatThrownBy(() -> pendingUserDao.deleteById(absentId))
                 .isInstanceOf(AuthDaoException.class)
-                .hasMessage(String.format("Object with id %s is not stored!", absentId.toString()));
+                .hasMessage("Object not found");
     }
 
     @Test
@@ -169,7 +169,7 @@ public class PendingUserDaoUnitTest {
 
         assertThatThrownBy(() -> pendingUserDao.update(absentPendingUser, id))
                 .isInstanceOf(AuthDaoException.class)
-                .hasMessage(String.format("Object with id %s is not stored!", id.toString()));
+                .hasMessage("Object not found");
     }
 
     private void setUpGetById(PendingUser pendingUser) {

@@ -18,16 +18,16 @@ import java.util.Map;
 public class UserControllerExceptionHandler {
     @ResponseStatus(HttpStatus.NOT_FOUND)
     @ExceptionHandler(UserNotFoundException.class)
-    public ApiExceptionResponse handleUserNotFoundException(UserNotFoundException exception) {;
-        return new ApiExceptionResponse(exception.getMessage(), HttpStatus.NOT_FOUND, ZonedDateTime.now());
+    public ApiExceptionResponse handleUserNotFoundException(UserNotFoundException exception) {
+        return new ApiExceptionResponse(exception.getMessage(), HttpStatus.NOT_FOUND, ZonedDateTime.now(), exception.getErrorMap());
     }
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ApiErrorMapExceptionResponse handleValidationExceptions(MethodArgumentNotValidException exception) {
+    public ApiExceptionResponse handleValidationExceptions(MethodArgumentNotValidException exception) {
         Map<String, String> errorMap = this.getErrorMap(exception);
         String message = "Error at validation";
-        return new ApiErrorMapExceptionResponse(message, HttpStatus.BAD_REQUEST, ZonedDateTime.now(), errorMap);
+        return new ApiExceptionResponse(message, HttpStatus.BAD_REQUEST, ZonedDateTime.now(), errorMap);
     }
 
     private Map<String, String> getErrorMap(MethodArgumentNotValidException exception) {
