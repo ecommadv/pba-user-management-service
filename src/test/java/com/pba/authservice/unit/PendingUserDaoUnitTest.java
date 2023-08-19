@@ -1,6 +1,7 @@
 package com.pba.authservice.unit;
 
 import com.pba.authservice.exceptions.AuthDaoException;
+import com.pba.authservice.exceptions.AuthDaoNotFoundException;
 import com.pba.authservice.mockgenerators.PendingUserMockGenerator;
 import com.pba.authservice.persistance.model.PendingUser;
 import com.pba.authservice.persistance.repository.PendingUserDaoImpl;
@@ -124,7 +125,7 @@ public class PendingUserDaoUnitTest {
         when(jdbcTemplate.update("delete", absentId)).thenReturn(0);
 
         assertThatThrownBy(() -> pendingUserDao.deleteById(absentId))
-                .isInstanceOf(AuthDaoException.class)
+                .isInstanceOf(AuthDaoNotFoundException.class)
                 .hasMessage("Object not found");
     }
 
@@ -168,7 +169,7 @@ public class PendingUserDaoUnitTest {
                 id)).thenReturn(0);
 
         assertThatThrownBy(() -> pendingUserDao.update(absentPendingUser, id))
-                .isInstanceOf(AuthDaoException.class)
+                .isInstanceOf(AuthDaoNotFoundException.class)
                 .hasMessage("Object not found");
     }
 

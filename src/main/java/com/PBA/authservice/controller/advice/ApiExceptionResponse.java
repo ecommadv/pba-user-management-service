@@ -3,5 +3,6 @@ package com.pba.authservice.controller.advice;
 import org.springframework.http.HttpStatus;
 
 import java.time.ZonedDateTime;
+import java.util.Map;
 
-public record ApiExceptionResponse(String message, HttpStatus httpStatus, ZonedDateTime timestamp) {}
+public record ApiExceptionResponse(HttpStatus httpStatus, ZonedDateTime timestamp, Map<String, String> errors) {}

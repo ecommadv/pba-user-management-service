@@ -1,17 +1,22 @@
 package com.pba.authservice.exceptions;
 
-import java.util.Map;
+import org.springframework.http.HttpStatus;
 
 public class AuthException extends RuntimeException {
-    private Map<String, String> errorMap;
+    private String code;
+    private HttpStatus httpStatus;
 
-    public AuthException(String message, Map<String, String> errorMap) {
+    public AuthException(String code, String message, HttpStatus httpStatus) {
         super(message);
-        this.errorMap = errorMap;
+        this.code = code;
+        this.httpStatus = httpStatus;
     }
 
-    public Map<String, String> getErrorMap() {
-        return errorMap;
+    public String getCode() {
+        return code;
     }
 
+    public HttpStatus getHttpStatus() {
+        return httpStatus;
+    }
 }

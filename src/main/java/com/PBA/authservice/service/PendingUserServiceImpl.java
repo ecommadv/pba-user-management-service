@@ -1,13 +1,14 @@
 package com.pba.authservice.service;
 
-import com.pba.authservice.AuthServiceApplication;
-import com.pba.authservice.exceptions.AuthServiceException;
+import com.pba.authservice.exceptions.ErrorCodes;
+import com.pba.authservice.exceptions.UserNotFoundException;
 import com.pba.authservice.persistance.model.PendingUser;
 import com.pba.authservice.persistance.model.PendingUserProfile;
 import com.pba.authservice.persistance.repository.PendingUserDao;
 import com.pba.authservice.persistance.repository.PendingUserProfileDao;
 import org.springframework.stereotype.Service;
 
+import java.util.Map;
 import java.util.UUID;
 
 @Service
@@ -33,7 +34,7 @@ public class PendingUserServiceImpl implements PendingUserService {
     @Override
     public PendingUser getPendingUserByValidationCode(UUID validationCode) {
         return pendingUserDao.getByValidationCode(validationCode)
-                .orElseThrow(() -> new AuthServiceException(String.format("User with validation code %s does not exist!", validationCode.toString())));
+                .orElseThrow(() -> new UserNotFoundException(ErrorCodes.USER_NOT_FOUND, String.format("User with validation code %s does not exist!", validationCode)));
     }
 
     @Override
@@ -44,7 +45,7 @@ public class PendingUserServiceImpl implements PendingUserService {
     @Override
     public PendingUserProfile getPendingUserProfileByUserId(Long id) {
         return pendingUserProfileDao.getByUserId(id)
-                .orElseThrow(() -> new AuthServiceException(String.format("User profile with user id %d does not exist!", id)));
+                .orElseThrow(() -> new UserNotFoundException(ErrorCodes.USER_NOT_FOUND, String.format("User with id %d does not exist!", id)));
     }
 
     @Override

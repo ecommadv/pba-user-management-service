@@ -1,6 +1,7 @@
 package com.pba.authservice.integration;
 
 import com.pba.authservice.exceptions.AuthDaoException;
+import com.pba.authservice.exceptions.AuthDaoNotFoundException;
 import com.pba.authservice.mockgenerators.ActiveUserMockGenerator;
 import com.pba.authservice.persistance.model.ActiveUser;
 import com.pba.authservice.persistance.model.ActiveUserProfile;
@@ -105,7 +106,7 @@ public class ActiveUserProfileDaoIntegrationTest extends BaseDaoIntegrationTest 
         Long id = new Random().nextLong();
 
         assertThatThrownBy(() -> activeUserProfileDao.deleteById(id))
-                .isInstanceOf(AuthDaoException.class)
+                .isInstanceOf(AuthDaoNotFoundException.class)
                 .hasMessage("Object not found");
     }
 
@@ -134,7 +135,7 @@ public class ActiveUserProfileDaoIntegrationTest extends BaseDaoIntegrationTest 
         Long id = new Random().nextLong();
 
         assertThatThrownBy(() -> activeUserProfileDao.update(activeUserProfile, id))
-                .isInstanceOf(AuthDaoException.class)
+                .isInstanceOf(AuthDaoNotFoundException.class)
                 .hasMessage("Object not found");
     }
 

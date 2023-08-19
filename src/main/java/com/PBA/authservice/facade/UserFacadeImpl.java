@@ -80,7 +80,7 @@ public class UserFacadeImpl implements UserFacade {
     private void validatePendingUser(PendingUser pendingUser) {
         if (pendingUser.isExpired()) {
             String errorMessage = String.format("Pending user with validation code %s has expired", pendingUser.getValidationCode());
-            throw new UserNotFoundException(errorMessage, Map.of("user.not.found", errorMessage));
+            throw new UserNotFoundException("user.is.expired", errorMessage);
         }
     }
 
