@@ -91,7 +91,7 @@ public abstract class JdbcRepository<ObjectT, IdT> {
         try {
             return field.get(obj);
         } catch (IllegalAccessException e) {
-            throw new AuthDaoException("field.extraction.error", "Error when extracting field of object", HttpStatus.BAD_REQUEST);
+            throw new AuthDaoException(ErrorCodes.FIELD_EXTRACTION, "Error when extracting field of object", HttpStatus.BAD_REQUEST);
         }
     }
 }

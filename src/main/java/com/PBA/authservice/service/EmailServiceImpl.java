@@ -1,5 +1,7 @@
 package com.pba.authservice.service;
 
+import com.pba.authservice.exceptions.EmailNotSentException;
+import com.pba.authservice.exceptions.ErrorCodes;
 import jakarta.mail.internet.MimeMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,33 +15,32 @@ import org.springframework.util.ResourceUtils;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.util.UUID;
 
 @Service
 public class EmailServiceImpl implements EmailService {
-    @Autowired
     private JavaMailSender mailSender;
 
-    @Autowired
-    private Environment environment;
-
     private Logger logger = LoggerFactory.getLogger(EmailServiceImpl.class);
+
+    @Value("${spring.mail.verification_link}")
+    private String genericVerificationLink;
+
+    public EmailServiceImpl(JavaMailSender mailSender) {
+        this.mailSender = mailSender;
+    }
 
     @Override
     public void sendVerificationEmail(String to, UUID validationCode) {
         String subject = "Email verification";
-        String verificationLink = String.format(environment.getProperty("spring.mail.verification_link"), validationCode);
+        String verificationLink = String.format(genericVerificationLink, validationCode);
 
-        String body = """
-                Click the following button to verify your account:
-                
-                %s
-                """;
-
-        this.sendEmailFromTemplate(to, subject, body, verificationLink);
+        this.sendEmailFromTemplate(to, subject, verificationLink);
     }
 
-    private void sendEmailFromTemplate(String to, String subject, String body, String verificationLink) {
+    private void sendEmailFromTemplate(String to, String subject, String verificationLink) {
         MimeMessage message = mailSender.createMimeMessage();
 
         try {
@@ -51,30 +52,16 @@ public class EmailServiceImpl implements EmailService {
 
             htmlTemplate = htmlTemplate.replace("${verification_link}", verificationLink);
 
-            message.setContent(String.format(body, htmlTemplate), "text/html; charset=utf-8");
+            message.setContent(htmlTemplate, "text/html; charset=utf-8");
         }
         catch(Exception ex) {
-            logger.error("Error when handling email message", ex);
+            throw new EmailNotSentException(ErrorCodes.EMAIL_NOT_SENT, "An error occurred when trying to send an email for user activation");
         }
 
         mailSender.send(message);
     }
 
-    private String readFile(File file) {
-        StringBuilder content = new StringBuilder();
-        String line;
-
-        try {
-            BufferedReader br = new BufferedReader(new FileReader(file));
-            while((line = br.readLine()) != null){
-                content.append(line);
-            }
-            br.close();
-        }
-        catch(Exception ex) {
-            logger.error("Error when handling email_content.html file", ex);
-        }
-
-        return content.toString();
+    private String readFile(File file) throws IOException {
+        return new String(Files.readAllBytes(file.toPath()));
     }
 }
