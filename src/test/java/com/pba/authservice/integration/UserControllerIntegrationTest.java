@@ -1,6 +1,7 @@
 package com.pba.authservice.integration;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.pba.authservice.mapper.PendingUserMapper;
 import com.pba.authservice.mockgenerators.ActiveUserMockGenerator;
 import com.pba.authservice.mockgenerators.PendingUserMockGenerator;
 import com.pba.authservice.controller.request.UserCreateRequest;
@@ -15,6 +16,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
@@ -38,6 +40,9 @@ public class UserControllerIntegrationTest extends BaseControllerIntegrationTest
     private ActiveUserProfileDao activeUserProfileDao;
 
     @Autowired
+    private PendingUserMapper pendingUserMapper;
+
+    @Autowired
     private MockMvc mockMvc;
 
     private ObjectMapper objectMapper;
@@ -52,13 +57,34 @@ public class UserControllerIntegrationTest extends BaseControllerIntegrationTest
         // given
         UserCreateRequest userCreateRequest = PendingUserMockGenerator.generateMockUserCreateRequest();
         String userCreateRequestJSON = objectMapper.writeValueAsString(userCreateRequest);
-        String registerUserEndpoint = "/api/user";
+        String registerUserEndpoint = "/api/user/register";
 
         // when
         MvcResult result = mockMvc.perform(MockMvcRequestBuilders.post(registerUserEndpoint)
                                     .contentType(MediaType.APPLICATION_JSON)
                                     .content(userCreateRequestJSON))
                 .andExpect(status().isCreated())
+                .andReturn();
+
+        // then
+        assertEquals(1, pendingUserDao.getAll().size());
+        assertEquals(1, pendingUserProfileDao.getAll().size());
+    }
+
+    @Test
+    public void testRegisterUser_whenPendingUserAlreadyExists() throws Exception {
+        // given
+        UserCreateRequest userCreateRequest = PendingUserMockGenerator.generateMockUserCreateRequest();
+        this.savePendingUser(userCreateRequest);
+
+        String userCreateRequestJSON = objectMapper.writeValueAsString(userCreateRequest);
+        String registerUserEndpoint = "/api/user/register";
+
+        // when
+        MvcResult result = mockMvc.perform(MockMvcRequestBuilders.post(registerUserEndpoint)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(userCreateRequestJSON))
+                .andExpect(status().isBadRequest())
                 .andReturn();
 
         // then
@@ -111,5 +137,12 @@ public class UserControllerIntegrationTest extends BaseControllerIntegrationTest
         assertEquals(1, activeUserDao.getAll().size());
         assertEquals(1, activeUserProfileDao.getAll().size());
         assertEquals(pendingUser.getUid(), activeUserDao.getAll().get(0).getUid());
+    }
+
+    private void savePendingUser(UserCreateRequest userCreateRequest) {
+        PendingUser pendingUser = pendingUserMapper.toPendingUser(userCreateRequest);
+        PendingUser savedPendingUser = pendingUserDao.save(pendingUser);
+        PendingUserProfile pendingUserProfile = pendingUserMapper.toPendingUserProfile(userCreateRequest, savedPendingUser.getId());
+        pendingUserProfileDao.save(pendingUserProfile);
     }
 }

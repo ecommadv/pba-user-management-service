@@ -43,4 +43,14 @@ public class ActiveUserServiceImpl implements ActiveUserService {
     public ActiveUserProfile addUserProfile(ActiveUserProfile activeUserProfile) {
         return activeUserProfileDao.save(activeUserProfile);
     }
+
+    @Override
+    public boolean userWithEmailExists(String email) {
+        return activeUserProfileDao.getByEmail(email).isPresent();
+    }
+
+    @Override
+    public boolean userWithUsernameExists(String username) {
+        return activeUserDao.getByUsername(username).isPresent();
+    }
 }

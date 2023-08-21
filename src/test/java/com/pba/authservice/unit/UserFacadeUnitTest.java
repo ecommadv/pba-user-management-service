@@ -66,6 +66,10 @@ public class UserFacadeUnitTest {
         verify(pendingUserService).addPendingUser(pendingUser);
         verify(pendingUserMapper).toPendingUserProfile(userCreateRequest, pendingUser.getId());
         verify(pendingUserService).addPendingUserProfile(pendingUserProfile);
+        verify(pendingUserService).userWithEmailExists(userCreateRequest.getEmail());
+        verify(pendingUserService).userWithUsernameExists(userCreateRequest.getUsername());
+        verify(activeUserService).userWithEmailExists(userCreateRequest.getEmail());
+        verify(activeUserService).userWithUsernameExists(userCreateRequest.getUsername());
         verify(emailService).sendVerificationEmail(userCreateRequest.getEmail(), pendingUser.getValidationCode());
         verifyNoMoreInteractions(pendingUserMapper, pendingUserService);
     }

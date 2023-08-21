@@ -13,4 +13,5 @@ public interface PendingUserDao {
     public PendingUser deleteById(Long id);
     public PendingUser update(PendingUser pendingUser, Long id);
     public Optional<PendingUser> getByValidationCode(UUID validationCode);
+    public Optional<PendingUser> getByUsername(String username);
 }

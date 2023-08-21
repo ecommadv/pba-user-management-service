@@ -140,7 +140,6 @@ public class PendingUserDaoUnitTest {
                 newPendingUser.getUid(),
                 newPendingUser.getUsername(),
                 newPendingUser.getPassword(),
-                newPendingUser.getEmail(),
                 newPendingUser.getCreatedAt(),
                 newPendingUser.getValidationCode(),
                 newPendingUser.getId())).thenReturn(1);
@@ -163,7 +162,6 @@ public class PendingUserDaoUnitTest {
                 absentPendingUser.getUid(),
                 absentPendingUser.getUsername(),
                 absentPendingUser.getPassword(),
-                absentPendingUser.getEmail(),
                 absentPendingUser.getCreatedAt(),
                 absentPendingUser.getValidationCode(),
                 id)).thenReturn(0);

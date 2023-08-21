@@ -30,4 +30,10 @@ public class ActiveUserProfileDaoImpl extends JdbcRepository<ActiveUserProfile, 
         String sql = activeUserProfileSqlProvider.selectByUserId();
         return jdbcTemplate.query(sql, activeUserProfileRowMapper, id).stream().findFirst();
     }
+
+    @Override
+    public Optional<ActiveUserProfile> getByEmail(String email) {
+        String sql = activeUserProfileSqlProvider.selectByEmail();
+        return jdbcTemplate.query(sql, activeUserProfileRowMapper, email).stream().findFirst();
+    }
 }

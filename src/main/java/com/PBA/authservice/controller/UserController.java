@@ -18,9 +18,10 @@ public interface UserController {
             Registers an user to the application.
             """)
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "Created")
+            @ApiResponse(responseCode = "201", description = "Created"),
+            @ApiResponse(responseCode = "400", description = "Bad Request")
             })
-    @PostMapping
+    @PostMapping("/register")
     public ResponseEntity<Void> registerUser(
             @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "User to register")
             @Valid @RequestBody UserCreateRequest userCreateRequest);

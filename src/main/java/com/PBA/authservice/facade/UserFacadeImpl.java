@@ -1,5 +1,7 @@
 package com.pba.authservice.facade;
 
+import com.pba.authservice.exceptions.ErrorCodes;
+import com.pba.authservice.exceptions.UserAlreadyExistsException;
 import com.pba.authservice.exceptions.UserNotFoundException;
 import com.pba.authservice.mapper.ActiveUserMapper;
 import com.pba.authservice.mapper.PendingUserMapper;
@@ -39,6 +41,7 @@ public class UserFacadeImpl implements UserFacade {
     @Override
     @Transactional
     public void registerUser(UserCreateRequest userCreateRequest) {
+        this.validateUserExists(userCreateRequest);
         PendingUser pendingUser = pendingUserMapper.toPendingUser(userCreateRequest);
         PendingUser savedPendingUser = pendingUserService.addPendingUser(pendingUser);
 
@@ -80,7 +83,7 @@ public class UserFacadeImpl implements UserFacade {
     private void validatePendingUser(PendingUser pendingUser) {
         if (pendingUser.isExpired()) {
             String errorMessage = String.format("Pending user with validation code %s has expired", pendingUser.getValidationCode());
-            throw new UserNotFoundException("user.is.expired", errorMessage);
+            throw new UserNotFoundException(ErrorCodes.USER_IS_EXPIRED, errorMessage);
         }
     }
 
@@ -90,5 +93,20 @@ public class UserFacadeImpl implements UserFacade {
         ActiveUserProfile activeUserProfile = pendingUserMapper.toActiveUserProfile(pendingUserProfile, savedActiveUser.getId());
         ActiveUserProfile savedUserProfile = activeUserService.addUserProfile(activeUserProfile);
         return Pair.of(savedActiveUser, savedUserProfile);
+    }
+
+    private void validateUserExists(UserCreateRequest userCreateRequest) {
+        String requestedEmail = userCreateRequest.getEmail();
+        String requestedUsername = userCreateRequest.getUsername();
+        boolean userWithEmailExists = pendingUserService.userWithEmailExists(requestedEmail) || activeUserService.userWithEmailExists(requestedEmail);
+        boolean userWithUsernameExists = pendingUserService.userWithUsernameExists(requestedUsername) || activeUserService.userWithUsernameExists(requestedUsername);
+        if (userWithEmailExists) {
+            String errorMessage = String.format("User with email %s already exists in the system", requestedEmail);
+            throw new UserAlreadyExistsException(ErrorCodes.USER_ALREADY_EXISTS, errorMessage);
+        }
+        if (userWithUsernameExists) {
+            String errorMessage = String.format("User with username %s already exists in the system", requestedUsername);
+            throw new UserAlreadyExistsException(ErrorCodes.USER_ALREADY_EXISTS, errorMessage);
+        }
     }
 }

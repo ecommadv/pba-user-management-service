@@ -13,4 +13,5 @@ public interface ActiveUserDao {
     public ActiveUser deleteById(Long id);
     public ActiveUser update(ActiveUser activeUser, Long id);
     public Optional<ActiveUser> getByUid(UUID uid);
+    public Optional<ActiveUser> getByUsername(String username);
 }

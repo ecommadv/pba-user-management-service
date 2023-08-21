@@ -16,7 +16,6 @@ public class PendingUserRowMapperImpl implements PendingUserRowMapper {
                 .uid(UUID.fromString(rs.getString("uid")))
                 .username(rs.getString("username"))
                 .password(rs.getString("password"))
-                .email(rs.getString("email"))
                 .createdAt(rs.getTimestamp("created_at").toLocalDateTime())
                 .validationCode(UUID.fromString(rs.getString("validation_code")))
                 .build();

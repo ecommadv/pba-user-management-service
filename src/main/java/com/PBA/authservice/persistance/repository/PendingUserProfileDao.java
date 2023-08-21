@@ -4,7 +4,6 @@ import com.pba.authservice.persistance.model.PendingUserProfile;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 public interface PendingUserProfileDao {
     public PendingUserProfile save(PendingUserProfile pendingUserProfile);
@@ -13,4 +12,5 @@ public interface PendingUserProfileDao {
     public PendingUserProfile deleteById(Long id);
     public PendingUserProfile update(PendingUserProfile pendingUserProfile, Long id);
     public Optional<PendingUserProfile> getByUserId(Long id);
+    public Optional<PendingUserProfile> getByEmail(String email);
 }

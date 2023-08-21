@@ -52,4 +52,14 @@ public class PendingUserServiceImpl implements PendingUserService {
     public PendingUserProfile deletePendingProfileById(Long id) {
         return pendingUserProfileDao.deleteById(id);
     }
+
+    @Override
+    public boolean userWithEmailExists(String email) {
+        return pendingUserProfileDao.getByEmail(email).isPresent();
+    }
+
+    @Override
+    public boolean userWithUsernameExists(String username) {
+        return pendingUserDao.getByUsername(username).isPresent();
+    }
 }

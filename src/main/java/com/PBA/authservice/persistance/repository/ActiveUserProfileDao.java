@@ -12,4 +12,5 @@ public interface ActiveUserProfileDao {
     public ActiveUserProfile deleteById(Long id);
     public ActiveUserProfile update(ActiveUserProfile activeUserProfile, Long id);
     public Optional<ActiveUserProfile> getByUserId(Long id);
+    public Optional<ActiveUserProfile> getByEmail(String email);
 }

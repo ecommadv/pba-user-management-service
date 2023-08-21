@@ -11,7 +11,6 @@ CREATE TABLE IF NOT EXISTS pending_user (
     uid uuid NOT NULL,
     username character varying NOT NULL,
     password character varying NOT NULL,
-    email character varying NOT NULL,
     created_at timestamp NOT NULL,
     validation_code uuid NOT NULL,
     PRIMARY KEY (id)

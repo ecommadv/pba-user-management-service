@@ -19,7 +19,6 @@ public class PendingUser {
     private UUID uid;
     private String username;
     private String password;
-    private String email;
     private LocalDateTime createdAt;
     private UUID validationCode;
 
