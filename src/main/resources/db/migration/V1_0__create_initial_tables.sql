@@ -20,8 +20,8 @@ CREATE TABLE IF NOT EXISTS active_user_profile (
     id SERIAL,
     firstname character varying NOT NULL,
     lastname character varying NOT NULL,
-    email character varying NOT NULL,
-    country character varying NOT NULL,
+    email character varying,
+    country character varying,
     age SMALLINT NOT NULL,
     user_id bigint NOT NULL,
     CONSTRAINT fk_user
