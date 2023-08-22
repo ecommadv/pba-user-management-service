@@ -40,21 +40,6 @@ public class UserRequestValidatorImpl implements UserRequestValidator {
     public void validateUserDoesNotAlreadyExistWhenUpdate(UserUpdateRequest userUpdateRequest,
                                                     ActiveUser userToUpdate,
                                                     ActiveUserProfile profileToUpdate) {
-        this.validateEmailWhenUpdate(userUpdateRequest, profileToUpdate);
-        this.validateUsernameWhenUpdate(userUpdateRequest, userToUpdate);
-    }
-
-    private void validateEmailWhenUpdate(UserUpdateRequest userUpdateRequest, ActiveUserProfile profileToUpdate) {
-        boolean requestedEmailChange = !userUpdateRequest.getEmail().equals(profileToUpdate.getEmail());
-        String email = userUpdateRequest.getEmail();
-        boolean userWithEmailExists = pendingUserService.userWithEmailExists(email) || activeUserService.userWithEmailExists(email);
-        if (requestedEmailChange && userWithEmailExists) {
-            String errorMessage = String.format("User with email %s already exists in the system", email);
-            throw new UserAlreadyExistsException(ErrorCodes.USER_ALREADY_EXISTS, errorMessage);
-        }
-    }
-
-    private void validateUsernameWhenUpdate(UserUpdateRequest userUpdateRequest, ActiveUser userToUpdate) {
         boolean requestedUsernameChange = !userUpdateRequest.getUsername().equals(userToUpdate.getUsername());
         String username = userUpdateRequest.getUsername();
         boolean userWithUsernameExists = pendingUserService.userWithUsernameExists(username) || activeUserService.userWithUsernameExists(username);

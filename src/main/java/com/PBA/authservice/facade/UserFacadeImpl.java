@@ -90,8 +90,8 @@ public class UserFacadeImpl implements UserFacade {
 
         userRequestValidator.validateUserDoesNotAlreadyExistWhenUpdate(userUpdateRequest, userToUpdate, profileToUpdate);
 
-        ActiveUser updatedUser = activeUserMapper.toUser(userUpdateRequest, userToUpdate.getId(), userToUpdate.getUid());
-        ActiveUserProfile updatedProfile = activeUserMapper.toUserProfile(userUpdateRequest, userToUpdate.getId(), profileToUpdate.getId());
+        ActiveUser updatedUser = activeUserMapper.toUser(userUpdateRequest, userToUpdate);
+        ActiveUserProfile updatedProfile = activeUserMapper.toUserProfile(userUpdateRequest, profileToUpdate);
         activeUserService.updateUser(updatedUser, updatedProfile);
 
         UserProfileDto userProfileDto = activeUserMapper.toUserProfileDto(updatedProfile);

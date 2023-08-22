@@ -5,6 +5,7 @@ import com.pba.authservice.persistance.model.ActiveUser;
 import com.pba.authservice.persistance.model.ActiveUserProfile;
 import com.pba.authservice.persistance.model.dtos.UserDto;
 import com.pba.authservice.persistance.model.dtos.UserProfileDto;
+import org.mapstruct.Context;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
@@ -17,11 +18,13 @@ public interface ActiveUserMapper {
 
     public UserProfileDto toUserProfileDto(ActiveUserProfile activeUserProfile);
 
-    @Mapping(target = "id", expression = "java(userId)")
-    @Mapping(target = "uid", expression = "java(userUid)")
-    public ActiveUser toUser(UserUpdateRequest userUpdateRequest, long userId, UUID userUid);
+    @Mapping(target = "id", expression = "java(activeUser.getId())")
+    @Mapping(target = "uid", expression = "java(activeUser.getUid())")
+    @Mapping(target = "password", expression = "java(activeUser.getPassword())")
+    public ActiveUser toUser(UserUpdateRequest userUpdateRequest, @Context ActiveUser activeUser);
 
-    @Mapping(target = "id", expression = "java(userProfileId)")
-    @Mapping(target = "userId", expression = "java(userId)")
-    public ActiveUserProfile toUserProfile(UserUpdateRequest userUpdateRequest, long userId, long userProfileId);
+    @Mapping(target = "id", expression = "java(userProfile.getId())")
+    @Mapping(target = "userId", expression = "java(userProfile.getUserId())")
+    @Mapping(target = "email", expression = "java(userProfile.getEmail())")
+    public ActiveUserProfile toUserProfile(UserUpdateRequest userUpdateRequest, @Context ActiveUserProfile userProfile);
 }
