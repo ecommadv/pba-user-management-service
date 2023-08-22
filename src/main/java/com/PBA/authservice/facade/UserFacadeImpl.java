@@ -1,7 +1,7 @@
 package com.pba.authservice.facade;
 
+import com.pba.authservice.controller.request.UserUpdateRequest;
 import com.pba.authservice.exceptions.ErrorCodes;
-import com.pba.authservice.exceptions.UserAlreadyExistsException;
 import com.pba.authservice.exceptions.UserNotFoundException;
 import com.pba.authservice.mapper.ActiveUserMapper;
 import com.pba.authservice.mapper.PendingUserMapper;
@@ -15,11 +15,11 @@ import com.pba.authservice.service.ActiveUserService;
 import com.pba.authservice.service.EmailService;
 import com.pba.authservice.service.PendingUserService;
 import com.pba.authservice.controller.request.UserCreateRequest;
+import com.pba.authservice.validator.UserRequestValidator;
 import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Map;
 import java.util.UUID;
 
 @Component
@@ -29,19 +29,26 @@ public class UserFacadeImpl implements UserFacade {
     private final ActiveUserService activeUserService;
     private final ActiveUserMapper activeUserMapper;
     private final EmailService emailService;
+    private final UserRequestValidator userRequestValidator;
 
-    public UserFacadeImpl(PendingUserService pendingUserService, PendingUserMapper pendingUserMapper, ActiveUserService activeUserService, ActiveUserMapper activeUserMapper, EmailService emailService) {
+    public UserFacadeImpl(PendingUserService pendingUserService,
+                          PendingUserMapper pendingUserMapper,
+                          ActiveUserService activeUserService,
+                          ActiveUserMapper activeUserMapper,
+                          EmailService emailService,
+                          UserRequestValidator userRequestValidator) {
         this.pendingUserService = pendingUserService;
         this.pendingUserMapper = pendingUserMapper;
         this.activeUserService = activeUserService;
         this.activeUserMapper = activeUserMapper;
         this.emailService = emailService;
+        this.userRequestValidator = userRequestValidator;
     }
 
     @Override
     @Transactional
     public void registerUser(UserCreateRequest userCreateRequest) {
-        this.validateUserExists(userCreateRequest);
+        userRequestValidator.validateUserDoesNotAlreadyExistWhenCreate(userCreateRequest);
         PendingUser pendingUser = pendingUserMapper.toPendingUser(userCreateRequest);
         PendingUser savedPendingUser = pendingUserService.addPendingUser(pendingUser);
 
@@ -75,6 +82,22 @@ public class UserFacadeImpl implements UserFacade {
         return activeUserMapper.toUserDto(savedActiveUser, userProfileDto);
     }
 
+    @Override
+    @Transactional
+    public UserDto updateUser(UUID userUid, UserUpdateRequest userUpdateRequest) {
+        ActiveUser userToUpdate = activeUserService.getUserByUid(userUid);
+        ActiveUserProfile profileToUpdate = activeUserService.getProfileByUserId(userToUpdate.getId());
+
+        userRequestValidator.validateUserDoesNotAlreadyExistWhenUpdate(userUpdateRequest, userToUpdate, profileToUpdate);
+
+        ActiveUser updatedUser = activeUserMapper.toUser(userUpdateRequest, userToUpdate.getId(), userToUpdate.getUid());
+        ActiveUserProfile updatedProfile = activeUserMapper.toUserProfile(userUpdateRequest, userToUpdate.getId(), profileToUpdate.getId());
+        activeUserService.updateUser(updatedUser, updatedProfile);
+
+        UserProfileDto userProfileDto = activeUserMapper.toUserProfileDto(updatedProfile);
+        return activeUserMapper.toUserDto(updatedUser, userProfileDto);
+    }
+
     private void deletePendingUser(PendingUser pendingUser, PendingUserProfile pendingUserProfile) {
         pendingUserService.deletePendingProfileById(pendingUserProfile.getId());
         pendingUserService.deletePendingUserById(pendingUser.getId());
@@ -93,20 +116,5 @@ public class UserFacadeImpl implements UserFacade {
         ActiveUserProfile activeUserProfile = pendingUserMapper.toActiveUserProfile(pendingUserProfile, savedActiveUser.getId());
         ActiveUserProfile savedUserProfile = activeUserService.addUserProfile(activeUserProfile);
         return Pair.of(savedActiveUser, savedUserProfile);
-    }
-
-    private void validateUserExists(UserCreateRequest userCreateRequest) {
-        String requestedEmail = userCreateRequest.getEmail();
-        String requestedUsername = userCreateRequest.getUsername();
-        boolean userWithEmailExists = pendingUserService.userWithEmailExists(requestedEmail) || activeUserService.userWithEmailExists(requestedEmail);
-        boolean userWithUsernameExists = pendingUserService.userWithUsernameExists(requestedUsername) || activeUserService.userWithUsernameExists(requestedUsername);
-        if (userWithEmailExists) {
-            String errorMessage = String.format("User with email %s already exists in the system", requestedEmail);
-            throw new UserAlreadyExistsException(ErrorCodes.USER_ALREADY_EXISTS, errorMessage);
-        }
-        if (userWithUsernameExists) {
-            String errorMessage = String.format("User with username %s already exists in the system", requestedUsername);
-            throw new UserAlreadyExistsException(ErrorCodes.USER_ALREADY_EXISTS, errorMessage);
-        }
     }
 }

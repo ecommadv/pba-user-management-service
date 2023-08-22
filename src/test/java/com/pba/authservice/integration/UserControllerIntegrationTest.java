@@ -1,6 +1,6 @@
 package com.pba.authservice.integration;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
+import com.pba.authservice.controller.request.UserUpdateRequest;
 import com.pba.authservice.mapper.PendingUserMapper;
 import com.pba.authservice.mockgenerators.ActiveUserMockGenerator;
 import com.pba.authservice.mockgenerators.PendingUserMockGenerator;
@@ -11,19 +11,19 @@ import com.pba.authservice.persistance.model.PendingUser;
 import com.pba.authservice.persistance.model.PendingUserProfile;
 import com.pba.authservice.persistance.model.dtos.UserDto;
 import com.pba.authservice.persistance.repository.*;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import static junit.framework.TestCase.assertTrue;
+import java.util.UUID;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 public class UserControllerIntegrationTest extends BaseControllerIntegrationTest {
@@ -90,6 +90,41 @@ public class UserControllerIntegrationTest extends BaseControllerIntegrationTest
         // then
         assertEquals(1, pendingUserDao.getAll().size());
         assertEquals(1, pendingUserProfileDao.getAll().size());
+    }
+
+    @Test
+    public void testUpdateUser() throws Exception {
+        // given
+        UserUpdateRequest userUpdateRequest = ActiveUserMockGenerator.generateMockUserUpdateRequest();
+        ActiveUser activeUser = ActiveUserMockGenerator.generateMockActiveUser();
+        ActiveUser savedActiveUser = activeUserDao.save(activeUser);
+        ActiveUserProfile activeUserProfile = ActiveUserMockGenerator.generateMockActiveUserProfile(activeUserDao.getAll());
+        ActiveUserProfile savedUserProfile = activeUserProfileDao.save(activeUserProfile);
+        UUID userToUpdateUid = savedActiveUser.getUid();
+        String updateUserEndpoint = String.format("/api/user/%s", userToUpdateUid);
+        String userUpdateRequestJSON = objectMapper.writeValueAsString(userUpdateRequest);
+
+        // when
+        MvcResult result = mockMvc.perform(MockMvcRequestBuilders.put(updateUserEndpoint)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(userUpdateRequestJSON))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        // then
+        assertEquals(1, activeUserDao.getAll().size());
+        assertEquals(1, activeUserProfileDao.getAll().size());
+        assertTrue(activeUserDao.getByUid(userToUpdateUid).isPresent());
+        assertTrue(activeUserProfileDao.getByUserId(savedActiveUser.getId()).isPresent());
+        ActiveUser updatedActiveUser = activeUserDao.getByUid(userToUpdateUid).get();
+        ActiveUserProfile updatedUserProfile = activeUserProfileDao.getByUserId(savedActiveUser.getId()).get();
+        assertEquals(userUpdateRequest.getUsername(), updatedActiveUser.getUsername());
+        assertEquals(userUpdateRequest.getPassword(), updatedActiveUser.getPassword());
+        assertEquals(userUpdateRequest.getFirstName(), updatedUserProfile.getFirstName());
+        assertEquals(userUpdateRequest.getLastName(), updatedUserProfile.getLastName());
+        assertEquals(userUpdateRequest.getEmail(), updatedUserProfile.getEmail());
+        assertEquals(userUpdateRequest.getCountry(), updatedUserProfile.getCountry());
+        assertEquals(userUpdateRequest.getAge(), updatedUserProfile.getAge());
     }
 
     @Test

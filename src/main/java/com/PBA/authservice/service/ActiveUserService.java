@@ -12,4 +12,5 @@ public interface ActiveUserService {
     public ActiveUserProfile addUserProfile(ActiveUserProfile activeUserProfile);
     public boolean userWithEmailExists(String email);
     public boolean userWithUsernameExists(String username);
+    public void updateUser(ActiveUser updatedUser, ActiveUserProfile updatedProfile);
 }
