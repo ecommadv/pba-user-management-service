@@ -79,10 +79,8 @@ public class ActiveUserMockGenerator {
     public static UserUpdateRequest generateMockUserUpdateRequest() {
         return UserUpdateRequest.builder()
                 .username(generateMockUsername())
-                .password(generateMockPassword())
                 .firstName(UUID.randomUUID().toString())
                 .lastName(UUID.randomUUID().toString())
-                .email(generateMockEmail())
                 .country(UUID.randomUUID().toString())
                 .age(new Random().nextInt())
                 .build();

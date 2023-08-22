@@ -119,10 +119,8 @@ public class UserControllerIntegrationTest extends BaseControllerIntegrationTest
         ActiveUser updatedActiveUser = activeUserDao.getByUid(userToUpdateUid).get();
         ActiveUserProfile updatedUserProfile = activeUserProfileDao.getByUserId(savedActiveUser.getId()).get();
         assertEquals(userUpdateRequest.getUsername(), updatedActiveUser.getUsername());
-        assertEquals(userUpdateRequest.getPassword(), updatedActiveUser.getPassword());
         assertEquals(userUpdateRequest.getFirstName(), updatedUserProfile.getFirstName());
         assertEquals(userUpdateRequest.getLastName(), updatedUserProfile.getLastName());
-        assertEquals(userUpdateRequest.getEmail(), updatedUserProfile.getEmail());
         assertEquals(userUpdateRequest.getCountry(), updatedUserProfile.getCountry());
         assertEquals(userUpdateRequest.getAge(), updatedUserProfile.getAge());
     }

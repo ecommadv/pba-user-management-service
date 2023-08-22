@@ -74,9 +74,7 @@ public class UserRequestValidatorUnitTest {
         ActiveUser userToUpdate = ActiveUserMockGenerator.generateMockActiveUser();
         ActiveUserProfile profileToUpdate = ActiveUserMockGenerator.generateMockActiveUserProfile();
         when(activeUserService.userWithUsernameExists(userUpdateRequest.getUsername())).thenReturn(false);
-        when(activeUserService.userWithEmailExists(userUpdateRequest.getEmail())).thenReturn(false);
         when(pendingUserService.userWithUsernameExists(userUpdateRequest.getUsername())).thenReturn(false);
-        when(pendingUserService.userWithEmailExists(userUpdateRequest.getEmail())).thenReturn(false);
 
         assertDoesNotThrow(() -> userRequestValidator.validateUserDoesNotAlreadyExistWhenUpdate(userUpdateRequest, userToUpdate, profileToUpdate));
     }
@@ -87,25 +85,10 @@ public class UserRequestValidatorUnitTest {
         ActiveUser userToUpdate = ActiveUserMockGenerator.generateMockActiveUser();
         ActiveUserProfile profileToUpdate = ActiveUserMockGenerator.generateMockActiveUserProfile();
         when(activeUserService.userWithUsernameExists(userUpdateRequest.getUsername())).thenReturn(true);
-        when(activeUserService.userWithEmailExists(userUpdateRequest.getEmail())).thenReturn(false);
         when(pendingUserService.userWithUsernameExists(userUpdateRequest.getUsername())).thenReturn(false);
-        when(pendingUserService.userWithEmailExists(userUpdateRequest.getEmail())).thenReturn(false);
 
         assertThatThrownBy(() -> userRequestValidator.validateUserDoesNotAlreadyExistWhenUpdate(userUpdateRequest, userToUpdate, profileToUpdate))
                 .isInstanceOf(UserAlreadyExistsException.class)
                 .hasMessage(String.format("User with username %s already exists in the system", userUpdateRequest.getUsername()));
-    }
-
-    @Test
-    public void testValidateUserDoesNotAlreadyExistWhenUpdate_whenUserWithEmailExists() {
-        UserUpdateRequest userUpdateRequest = ActiveUserMockGenerator.generateMockUserUpdateRequest();
-        ActiveUser userToUpdate = ActiveUserMockGenerator.generateMockActiveUser();
-        ActiveUserProfile profileToUpdate = ActiveUserMockGenerator.generateMockActiveUserProfile();
-        when(activeUserService.userWithEmailExists(userUpdateRequest.getEmail())).thenReturn(true);
-        when(pendingUserService.userWithEmailExists(userUpdateRequest.getEmail())).thenReturn(false);
-
-        assertThatThrownBy(() -> userRequestValidator.validateUserDoesNotAlreadyExistWhenUpdate(userUpdateRequest, userToUpdate, profileToUpdate))
-                .isInstanceOf(UserAlreadyExistsException.class)
-                .hasMessage(String.format("User with email %s already exists in the system", userUpdateRequest.getEmail()));
     }
 }
