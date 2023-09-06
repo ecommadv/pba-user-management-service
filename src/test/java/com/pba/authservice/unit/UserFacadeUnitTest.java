@@ -15,6 +15,7 @@ import com.pba.authservice.persistance.model.dtos.UserProfileDto;
 import com.pba.authservice.service.ActiveUserService;
 import com.pba.authservice.service.EmailService;
 import com.pba.authservice.service.PendingUserService;
+import com.pba.authservice.validator.UserRequestValidator;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -47,6 +48,9 @@ public class UserFacadeUnitTest {
     @Mock
     private EmailService emailService;
 
+    @Mock
+    private UserRequestValidator userRequestValidator;
+
     @Test
     public void testRegisterUser() {
         // given
@@ -62,14 +66,11 @@ public class UserFacadeUnitTest {
         userFacade.registerUser(userCreateRequest);
 
         // then
+        verify(userRequestValidator).validateUserDoesNotAlreadyExistWhenCreate(userCreateRequest);
         verify(pendingUserMapper).toPendingUser(userCreateRequest);
         verify(pendingUserService).addPendingUser(pendingUser);
         verify(pendingUserMapper).toPendingUserProfile(userCreateRequest, pendingUser.getId());
         verify(pendingUserService).addPendingUserProfile(pendingUserProfile);
-        verify(pendingUserService).userWithEmailExists(userCreateRequest.getEmail());
-        verify(pendingUserService).userWithUsernameExists(userCreateRequest.getUsername());
-        verify(activeUserService).userWithEmailExists(userCreateRequest.getEmail());
-        verify(activeUserService).userWithUsernameExists(userCreateRequest.getUsername());
         verify(emailService).sendVerificationEmail(userCreateRequest.getEmail(), pendingUser.getValidationCode());
         verifyNoMoreInteractions(pendingUserMapper, pendingUserService);
     }

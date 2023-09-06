@@ -1,5 +1,6 @@
 package com.pba.authservice.controller;
 
+import com.pba.authservice.controller.request.UserUpdateRequest;
 import com.pba.authservice.facade.UserFacade;
 import com.pba.authservice.controller.request.UserCreateRequest;
 import com.pba.authservice.persistance.model.dtos.UserDto;
@@ -33,5 +34,11 @@ public class UserControllerImpl implements UserController {
     public ResponseEntity<UserDto> activateUser(UUID validationCode) {
         UserDto userDto = userFacade.verifyUser(validationCode);
         return new ResponseEntity<>(userDto, HttpStatus.CREATED);
+    }
+
+    @Override
+    public ResponseEntity<UserDto> updateUser(UUID userUid, UserUpdateRequest userUpdateRequest) {
+        UserDto userDto = userFacade.updateUser(userUid, userUpdateRequest);
+        return new ResponseEntity<>(userDto, HttpStatus.OK);
     }
 }

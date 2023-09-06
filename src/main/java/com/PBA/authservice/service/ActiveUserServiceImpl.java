@@ -53,4 +53,10 @@ public class ActiveUserServiceImpl implements ActiveUserService {
     public boolean userWithUsernameExists(String username) {
         return activeUserDao.getByUsername(username).isPresent();
     }
+
+    @Override
+    public void updateUser(ActiveUser updatedUser, ActiveUserProfile updatedProfile) {
+        activeUserProfileDao.update(updatedProfile, updatedProfile.getId());
+        activeUserDao.update(updatedUser, updatedUser.getId());
+    }
 }
