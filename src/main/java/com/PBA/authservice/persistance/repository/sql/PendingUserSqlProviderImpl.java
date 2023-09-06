@@ -13,17 +13,16 @@ public class PendingUserSqlProviderImpl implements PendingUserSqlProvider {
                     uid,
                     username,
                     password,
-                    email,
                     created_at,
                     validation_code
-                ) VALUES (DEFAULT, ?, ?, ?, ?, ?, ?);
+                ) VALUES (DEFAULT, ?, ?, ?, ?, ?);
                 """;
     }
 
     @Override
     public String selectById() {
         return """
-                SELECT id, uid, username, password, email, created_at, validation_code
+                SELECT id, uid, username, password, created_at, validation_code
                 FROM pending_user
                 WHERE
                     id = ?
@@ -49,7 +48,7 @@ public class PendingUserSqlProviderImpl implements PendingUserSqlProvider {
     public String update() {
         return """
                 UPDATE pending_user
-                SET uid = ?, username = ?, password = ?, email = ?, created_at = ?, validation_code = ?
+                SET uid = ?, username = ?, password = ?, created_at = ?, validation_code = ?
                 WHERE id = ?
                """;
     }
@@ -57,10 +56,20 @@ public class PendingUserSqlProviderImpl implements PendingUserSqlProvider {
     @Override
     public String selectByValidationCode() {
         return """
-                SELECT id, uid, username, password, email, created_at, validation_code
+                SELECT id, uid, username, password, created_at, validation_code
                 FROM pending_user
                 WHERE
                     validation_code = ?
+                """;
+    }
+
+    @Override
+    public String selectByUsername() {
+        return """
+                SELECT id, uid, username, password, created_at, validation_code
+                FROM pending_user
+                WHERE
+                    username = ?
                 """;
     }
 }

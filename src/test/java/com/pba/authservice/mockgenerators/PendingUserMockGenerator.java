@@ -20,7 +20,6 @@ public class PendingUserMockGenerator {
                 .uid(UUID.randomUUID())
                 .username(generateMockUsername())
                 .password(generateMockPassword())
-                .email(generateMockEmail())
                 .createdAt(Timestamp.from(Instant.now()).toLocalDateTime())
                 .validationCode(UUID.randomUUID())
                 .build();

@@ -3,6 +3,7 @@ package com.pba.authservice.controller.advice;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.pba.authservice.exceptions.AuthException;
+import com.pba.authservice.exceptions.UserAlreadyExistsException;
 import com.pba.authservice.exceptions.UserNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
@@ -22,14 +23,20 @@ public class UserControllerExceptionHandler {
     @ResponseStatus(HttpStatus.NOT_FOUND)
     @ExceptionHandler(AuthException.class)
     public ApiExceptionResponse handleAuthException(AuthException exception) {
-        return new ApiExceptionResponse(exception.getHttpStatus(), ZonedDateTime.now(), Map.of(exception.getCode(), exception.getMessage()));
+        return new ApiExceptionResponse(ZonedDateTime.now(), Map.of(exception.getCode(), exception.getMessage()));
     }
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ApiExceptionResponse handleValidationExceptions(MethodArgumentNotValidException exception) {
         Map<String, String> errorMap = this.getErrorMap(exception);
-        return new ApiExceptionResponse(HttpStatus.BAD_REQUEST, ZonedDateTime.now(), errorMap);
+        return new ApiExceptionResponse(ZonedDateTime.now(), errorMap);
+    }
+
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(UserAlreadyExistsException.class)
+    public ApiExceptionResponse handleUserAlreadyExistsException(UserAlreadyExistsException exception) {
+        return new ApiExceptionResponse(ZonedDateTime.now(), Map.of(exception.getCode(), exception.getMessage()));
     }
 
     private Map<String, String> getErrorMap(MethodArgumentNotValidException exception) {

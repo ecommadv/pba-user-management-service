@@ -11,7 +11,6 @@ CREATE TABLE IF NOT EXISTS pending_user (
     uid uuid NOT NULL,
     username character varying NOT NULL,
     password character varying NOT NULL,
-    email character varying NOT NULL,
     created_at timestamp NOT NULL,
     validation_code uuid NOT NULL,
     PRIMARY KEY (id)
@@ -22,8 +21,8 @@ CREATE TABLE IF NOT EXISTS active_user_profile (
     firstname character varying NOT NULL,
     lastname character varying NOT NULL,
     email character varying NOT NULL,
-    country character varying NOT NULL,
-    age SMALLINT NOT NULL,
+    country character varying,
+    age INTEGER,
     user_id bigint NOT NULL,
     CONSTRAINT fk_user
         FOREIGN KEY (user_id)

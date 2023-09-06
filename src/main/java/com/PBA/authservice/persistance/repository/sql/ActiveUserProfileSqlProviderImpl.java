@@ -62,4 +62,14 @@ public class ActiveUserProfileSqlProviderImpl implements ActiveUserProfileSqlPro
                     user_id = ?
                 """;
     }
+
+    @Override
+    public String selectByEmail() {
+        return """
+                SELECT id, firstname, lastname, email, country, age, user_id
+                FROM active_user_profile
+                WHERE
+                    email = ?
+                """;
+    }
 }

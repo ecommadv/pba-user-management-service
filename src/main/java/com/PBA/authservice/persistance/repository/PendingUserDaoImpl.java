@@ -27,4 +27,10 @@ public class PendingUserDaoImpl extends JdbcRepository<PendingUser, Long> implem
         String sql = pendingUserSqlProvider.selectByValidationCode();
         return jdbcTemplate.query(sql, pendingUserRowMapper, validationCode).stream().findFirst();
     }
+
+    @Override
+    public Optional<PendingUser> getByUsername(String username) {
+        String sql = pendingUserSqlProvider.selectByUsername();
+        return jdbcTemplate.query(sql, pendingUserRowMapper, username).stream().findFirst();
+    }
 }

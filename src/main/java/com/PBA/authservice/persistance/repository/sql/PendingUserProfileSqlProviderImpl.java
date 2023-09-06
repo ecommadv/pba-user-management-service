@@ -61,4 +61,14 @@ public class PendingUserProfileSqlProviderImpl implements PendingUserProfileSqlP
                     user_id = ?
                 """;
     }
+
+    @Override
+    public String selectByEmail() {
+        return """
+                SELECT id, firstname, lastname, email, user_id
+                FROM pending_user_profile
+                WHERE
+                    email = ?
+                """;
+    }
 }

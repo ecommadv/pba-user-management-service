@@ -31,4 +31,10 @@ public class PendingUserProfileDaoImpl extends JdbcRepository<PendingUserProfile
         String sql = pendingUserSqlProvider.selectByUserId();
         return jdbcTemplate.query(sql, pendingUserProfileRowMapper, id).stream().findFirst();
     }
+
+    @Override
+    public Optional<PendingUserProfile> getByEmail(String email) {
+        String sql = pendingUserSqlProvider.selectByEmail();
+        return jdbcTemplate.query(sql, pendingUserProfileRowMapper, email).stream().findFirst();
+    }
 }

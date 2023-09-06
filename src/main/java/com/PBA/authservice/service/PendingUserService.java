@@ -12,4 +12,6 @@ public interface PendingUserService {
     public PendingUser deletePendingUserById(Long id);
     public PendingUserProfile getPendingUserProfileByUserId(Long id);
     public PendingUserProfile deletePendingProfileById(Long id);
+    public boolean userWithEmailExists(String email);
+    public boolean userWithUsernameExists(String username);
 }
