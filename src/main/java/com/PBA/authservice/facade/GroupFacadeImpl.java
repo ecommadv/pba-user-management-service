@@ -28,6 +28,7 @@ public class GroupFacadeImpl implements GroupFacade {
     }
 
     @Override
+    @Transactional
     public GroupDto createGroup(GroupCreateRequest groupCreateRequest) {
         this.validateGroupDoesNotAlreadyExist(groupCreateRequest);
 
