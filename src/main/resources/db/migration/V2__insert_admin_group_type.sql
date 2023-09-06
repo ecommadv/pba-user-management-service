@@ -1,0 +1,1 @@
+INSERT INTO user_type(id, name) VALUES (DEFAULT, 'admin');

@@ -1,8 +1,8 @@
 package com.pba.authservice.facade;
 
 import com.pba.authservice.exceptions.ErrorCodes;
-import com.pba.authservice.exceptions.UserAlreadyExistsException;
-import com.pba.authservice.exceptions.UserNotFoundException;
+import com.pba.authservice.exceptions.EntityAlreadyExistsException;
+import com.pba.authservice.exceptions.EntityNotFoundException;
 import com.pba.authservice.mapper.ActiveUserMapper;
 import com.pba.authservice.mapper.PendingUserMapper;
 import com.pba.authservice.persistance.model.ActiveUser;
@@ -19,7 +19,6 @@ import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Map;
 import java.util.UUID;
 
 @Component
@@ -83,7 +82,7 @@ public class UserFacadeImpl implements UserFacade {
     private void validatePendingUser(PendingUser pendingUser) {
         if (pendingUser.isExpired()) {
             String errorMessage = String.format("Pending user with validation code %s has expired", pendingUser.getValidationCode());
-            throw new UserNotFoundException(ErrorCodes.USER_IS_EXPIRED, errorMessage);
+            throw new EntityNotFoundException(ErrorCodes.USER_IS_EXPIRED, errorMessage);
         }
     }
 
@@ -102,11 +101,11 @@ public class UserFacadeImpl implements UserFacade {
         boolean userWithUsernameExists = pendingUserService.userWithUsernameExists(requestedUsername) || activeUserService.userWithUsernameExists(requestedUsername);
         if (userWithEmailExists) {
             String errorMessage = String.format("User with email %s already exists in the system", requestedEmail);
-            throw new UserAlreadyExistsException(ErrorCodes.USER_ALREADY_EXISTS, errorMessage);
+            throw new EntityAlreadyExistsException(ErrorCodes.USER_ALREADY_EXISTS, errorMessage);
         }
         if (userWithUsernameExists) {
             String errorMessage = String.format("User with username %s already exists in the system", requestedUsername);
-            throw new UserAlreadyExistsException(ErrorCodes.USER_ALREADY_EXISTS, errorMessage);
+            throw new EntityAlreadyExistsException(ErrorCodes.USER_ALREADY_EXISTS, errorMessage);
         }
     }
 }

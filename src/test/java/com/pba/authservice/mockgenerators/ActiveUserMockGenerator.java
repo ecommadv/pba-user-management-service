@@ -1,6 +1,7 @@
 package com.pba.authservice.mockgenerators;
 import com.pba.authservice.persistance.model.ActiveUser;
 import com.pba.authservice.persistance.model.ActiveUserProfile;
+import com.pba.authservice.persistance.model.UserType;
 import com.pba.authservice.persistance.model.dtos.UserDto;
 import com.pba.authservice.persistance.model.dtos.UserProfileDto;
 
@@ -59,9 +60,10 @@ public class ActiveUserMockGenerator {
         return generateMockActiveUserProfile(activeUserIds.stream().findFirst().get());
     }
 
-    public static List<ActiveUserProfile> generateMockListOfActiveUserProfiles(List<ActiveUser> activeUsers, int size) {
-        return Stream.generate(() -> ActiveUserMockGenerator.generateMockActiveUserProfile(activeUsers))
-                .limit(size)
+    public static List<ActiveUserProfile> generateMockListOfActiveUserProfiles(List<ActiveUser> activeUsers) {
+        return activeUsers
+                .stream()
+                .map(activeUser -> generateMockActiveUserProfile(activeUser.getId()))
                 .collect(Collectors.toList());
     }
 
@@ -73,6 +75,19 @@ public class ActiveUserMockGenerator {
                 .country(UUID.randomUUID().toString())
                 .age(new Random().nextInt())
                 .build();
+    }
+
+    public static UserType generateMockUserType() {
+        return UserType.builder()
+                .id(new Random().nextLong())
+                .name(generateRandomString(5))
+                .build();
+    }
+
+    public static List<UserType> generateMockListOfUserTypes(int sampleSize) {
+        return Stream.generate(ActiveUserMockGenerator::generateMockUserType)
+                .limit(sampleSize)
+                .collect(Collectors.toList());
     }
 
     private static String generateMockEmail() {

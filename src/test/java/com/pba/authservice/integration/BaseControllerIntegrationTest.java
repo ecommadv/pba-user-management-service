@@ -7,7 +7,7 @@ import org.springframework.test.context.jdbc.Sql;
 import org.testcontainers.containers.PostgreSQLContainer;
 
 @SpringBootTest
-@Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = {"classpath:/cleanup.sql"})
+@Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = {"classpath:/cleanup.sql", "classpath:/data.sql"})
 @AutoConfigureMockMvc
 public class BaseControllerIntegrationTest {
     @ServiceConnection
