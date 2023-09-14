@@ -45,7 +45,7 @@ public class ActiveUserProfileDaoIntegrationTest extends BaseDaoIntegrationTest 
         // given
         this.addMockListOfActiveUsers();
         List<ActiveUser> activeUsers = activeUserDao.getAll();
-        List<ActiveUserProfile> activeUserProfiles = ActiveUserMockGenerator.generateMockListOfActiveUserProfiles(activeUsers, 10);
+        List<ActiveUserProfile> activeUserProfiles = ActiveUserMockGenerator.generateMockListOfActiveUserProfiles(activeUsers);
         this.addMockListOfActiveUserProfiles(activeUserProfiles);
         List<Long> expectedIds = this.extractUserIds(activeUserProfiles);
 

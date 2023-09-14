@@ -2,7 +2,7 @@ package com.pba.authservice.facade;
 
 import com.pba.authservice.controller.request.UserUpdateRequest;
 import com.pba.authservice.exceptions.ErrorCodes;
-import com.pba.authservice.exceptions.UserNotFoundException;
+import com.pba.authservice.exceptions.EntityNotFoundException;
 import com.pba.authservice.mapper.ActiveUserMapper;
 import com.pba.authservice.mapper.PendingUserMapper;
 import com.pba.authservice.persistance.model.ActiveUser;
@@ -106,7 +106,7 @@ public class UserFacadeImpl implements UserFacade {
     private void validatePendingUser(PendingUser pendingUser) {
         if (pendingUser.isExpired()) {
             String errorMessage = String.format("Pending user with validation code %s has expired", pendingUser.getValidationCode());
-            throw new UserNotFoundException(ErrorCodes.USER_IS_EXPIRED, errorMessage);
+            throw new EntityNotFoundException(ErrorCodes.USER_IS_EXPIRED, errorMessage);
         }
     }
 
