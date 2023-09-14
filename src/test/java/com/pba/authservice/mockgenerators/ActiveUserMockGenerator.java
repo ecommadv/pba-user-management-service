@@ -1,4 +1,5 @@
 package com.pba.authservice.mockgenerators;
+import com.pba.authservice.controller.request.UserUpdateRequest;
 import com.pba.authservice.persistance.model.ActiveUser;
 import com.pba.authservice.persistance.model.ActiveUserProfile;
 import com.pba.authservice.persistance.model.UserType;
@@ -72,6 +73,16 @@ public class ActiveUserMockGenerator {
                 .firstName(UUID.randomUUID().toString())
                 .lastName(UUID.randomUUID().toString())
                 .email(generateMockEmail())
+                .country(UUID.randomUUID().toString())
+                .age(new Random().nextInt())
+                .build();
+    }
+
+    public static UserUpdateRequest generateMockUserUpdateRequest() {
+        return UserUpdateRequest.builder()
+                .username(generateMockUsername())
+                .firstName(UUID.randomUUID().toString())
+                .lastName(UUID.randomUUID().toString())
                 .country(UUID.randomUUID().toString())
                 .age(new Random().nextInt())
                 .build();

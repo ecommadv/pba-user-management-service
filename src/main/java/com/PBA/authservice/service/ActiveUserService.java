@@ -14,4 +14,5 @@ public interface ActiveUserService {
     public boolean userWithEmailExists(String email);
     public boolean userWithUsernameExists(String username);
     public UserType getUserTypeByName(String name);
+    public void updateUser(ActiveUser updatedUser, ActiveUserProfile updatedProfile);
 }

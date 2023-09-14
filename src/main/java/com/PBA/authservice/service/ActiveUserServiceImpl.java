@@ -62,4 +62,9 @@ public class ActiveUserServiceImpl implements ActiveUserService {
         return userTypeDao.getByName(name)
                 .orElseThrow(() -> new EntityNotFoundException(ErrorCodes.USER_TYPE_NOT_FOUND, String.format("User type with name %s does not exist!", name)));
     }
+
+    public void updateUser(ActiveUser updatedUser, ActiveUserProfile updatedProfile) {
+        activeUserProfileDao.update(updatedProfile, updatedProfile.getId());
+        activeUserDao.update(updatedUser, updatedUser.getId());
+    }
 }
