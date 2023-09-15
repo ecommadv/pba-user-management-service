@@ -1,8 +1,10 @@
 package com.pba.authservice.controller;
 
+import com.pba.authservice.controller.request.LoginRequest;
 import com.pba.authservice.controller.request.UserUpdateRequest;
 import com.pba.authservice.facade.UserFacade;
 import com.pba.authservice.controller.request.UserCreateRequest;
+import com.pba.authservice.persistance.model.dtos.LoginDto;
 import com.pba.authservice.persistance.model.dtos.UserDto;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -40,5 +42,11 @@ public class UserControllerImpl implements UserController {
     public ResponseEntity<UserDto> updateUser(UUID userUid, UserUpdateRequest userUpdateRequest) {
         UserDto userDto = userFacade.updateUser(userUid, userUpdateRequest);
         return new ResponseEntity<>(userDto, HttpStatus.OK);
+    }
+
+    @Override
+    public ResponseEntity<LoginDto> loginUser(LoginRequest loginRequest) {
+        LoginDto loginDto = userFacade.loginUser(loginRequest);
+        return new ResponseEntity<>(loginDto, HttpStatus.OK);
     }
 }

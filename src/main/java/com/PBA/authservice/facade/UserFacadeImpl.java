@@ -1,5 +1,6 @@
 package com.pba.authservice.facade;
 
+import com.pba.authservice.controller.request.LoginRequest;
 import com.pba.authservice.controller.request.UserUpdateRequest;
 import com.pba.authservice.exceptions.ErrorCodes;
 import com.pba.authservice.exceptions.EntityNotFoundException;
@@ -9,10 +10,12 @@ import com.pba.authservice.persistance.model.ActiveUser;
 import com.pba.authservice.persistance.model.ActiveUserProfile;
 import com.pba.authservice.persistance.model.PendingUser;
 import com.pba.authservice.persistance.model.PendingUserProfile;
+import com.pba.authservice.persistance.model.dtos.LoginDto;
 import com.pba.authservice.persistance.model.dtos.UserDto;
 import com.pba.authservice.persistance.model.dtos.UserProfileDto;
 import com.pba.authservice.service.ActiveUserService;
 import com.pba.authservice.service.EmailService;
+import com.pba.authservice.service.JwtService;
 import com.pba.authservice.service.PendingUserService;
 import com.pba.authservice.controller.request.UserCreateRequest;
 import com.pba.authservice.validator.UserRequestValidator;
@@ -30,19 +33,22 @@ public class UserFacadeImpl implements UserFacade {
     private final ActiveUserMapper activeUserMapper;
     private final EmailService emailService;
     private final UserRequestValidator userRequestValidator;
+    private final JwtService jwtService;
 
     public UserFacadeImpl(PendingUserService pendingUserService,
                           PendingUserMapper pendingUserMapper,
                           ActiveUserService activeUserService,
                           ActiveUserMapper activeUserMapper,
                           EmailService emailService,
-                          UserRequestValidator userRequestValidator) {
+                          UserRequestValidator userRequestValidator,
+                          JwtService jwtService) {
         this.pendingUserService = pendingUserService;
         this.pendingUserMapper = pendingUserMapper;
         this.activeUserService = activeUserService;
         this.activeUserMapper = activeUserMapper;
         this.emailService = emailService;
         this.userRequestValidator = userRequestValidator;
+        this.jwtService = jwtService;
     }
 
     @Override
@@ -96,6 +102,17 @@ public class UserFacadeImpl implements UserFacade {
 
         UserProfileDto userProfileDto = activeUserMapper.toUserProfileDto(updatedProfile);
         return activeUserMapper.toUserDto(updatedUser, userProfileDto);
+    }
+
+    @Override
+    public LoginDto loginUser(LoginRequest loginRequest) {
+        ActiveUser user = activeUserService.findByUsernameAndPassword(loginRequest.getUsername(), loginRequest.getPassword());
+        String token = jwtService.generateAccessToken(user);
+
+        ActiveUserProfile userProfile = activeUserService.getProfileByUserId(user.getId());
+        UserProfileDto userProfileDto = activeUserMapper.toUserProfileDto(userProfile);
+        UserDto userDto = activeUserMapper.toUserDto(user, userProfileDto);
+        return activeUserMapper.toLoginDto(userDto, token);
     }
 
     private void deletePendingUser(PendingUser pendingUser, PendingUserProfile pendingUserProfile) {

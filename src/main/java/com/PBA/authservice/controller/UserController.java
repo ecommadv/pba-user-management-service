@@ -1,7 +1,9 @@
 package com.pba.authservice.controller;
 
+import com.pba.authservice.controller.request.LoginRequest;
 import com.pba.authservice.controller.request.UserCreateRequest;
 import com.pba.authservice.controller.request.UserUpdateRequest;
+import com.pba.authservice.persistance.model.dtos.LoginDto;
 import com.pba.authservice.persistance.model.dtos.UserDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -52,4 +54,13 @@ public interface UserController {
     @PutMapping("/{uid}")
     public ResponseEntity<UserDto> updateUser(@PathVariable("uid") UUID userUid,
                                               @Valid @RequestBody UserUpdateRequest userUpdateRequest);
+
+    @Operation(summary = "Logins an user to the system.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "OK"),
+            @ApiResponse(responseCode = "400", description = "Bad Request"),
+            @ApiResponse(responseCode = "404", description = "Not Found")
+    })
+    @PostMapping("/login")
+    public ResponseEntity<LoginDto> loginUser(@Valid @RequestBody LoginRequest loginRequest);
 }

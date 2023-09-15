@@ -2,7 +2,7 @@ package com.pba.authservice.unit;
 
 import com.pba.authservice.controller.request.UserCreateRequest;
 import com.pba.authservice.controller.request.UserUpdateRequest;
-import com.pba.authservice.exceptions.UserAlreadyExistsException;
+import com.pba.authservice.exceptions.EntityAlreadyExistsException;
 import com.pba.authservice.mockgenerators.ActiveUserMockGenerator;
 import com.pba.authservice.mockgenerators.PendingUserMockGenerator;
 import com.pba.authservice.persistance.model.ActiveUser;
@@ -51,7 +51,7 @@ public class UserRequestValidatorUnitTest {
         when(pendingUserService.userWithEmailExists(userCreateRequest.getEmail())).thenReturn(false);
 
         assertThatThrownBy(() -> userRequestValidator.validateUserDoesNotAlreadyExistWhenCreate(userCreateRequest))
-                .isInstanceOf(UserAlreadyExistsException.class)
+                .isInstanceOf(EntityAlreadyExistsException.class)
                 .hasMessage(String.format("User with username %s already exists in the system", userCreateRequest.getUsername()));
     }
 
@@ -64,7 +64,7 @@ public class UserRequestValidatorUnitTest {
         when(pendingUserService.userWithEmailExists(userCreateRequest.getEmail())).thenReturn(false);
 
         assertThatThrownBy(() -> userRequestValidator.validateUserDoesNotAlreadyExistWhenCreate(userCreateRequest))
-                .isInstanceOf(UserAlreadyExistsException.class)
+                .isInstanceOf(EntityAlreadyExistsException.class)
                 .hasMessage(String.format("User with email %s already exists in the system", userCreateRequest.getEmail()));
     }
 
@@ -88,7 +88,7 @@ public class UserRequestValidatorUnitTest {
         when(pendingUserService.userWithUsernameExists(userUpdateRequest.getUsername())).thenReturn(false);
 
         assertThatThrownBy(() -> userRequestValidator.validateUserDoesNotAlreadyExistWhenUpdate(userUpdateRequest, userToUpdate, profileToUpdate))
-                .isInstanceOf(UserAlreadyExistsException.class)
+                .isInstanceOf(EntityAlreadyExistsException.class)
                 .hasMessage(String.format("User with username %s already exists in the system", userUpdateRequest.getUsername()));
     }
 }

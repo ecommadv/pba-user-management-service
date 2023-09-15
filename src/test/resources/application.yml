@@ -16,3 +16,5 @@ spring:
           starttls:
             enable: true
     verification_link: http://localhost:8080/api/user/activate/%s
+jwt:
+  secret: gjksgAWDSAFW@!SD324%^4387dfbgSAhjklsdfALSWKJGEHADS@fhdkjsaj@UHDFUSfjdksFHBDJSDLFhhfjddzJDHF@@!ED3424edhsk3982fdhsAKJ3892

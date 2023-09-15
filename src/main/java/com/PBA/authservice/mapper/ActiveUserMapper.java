@@ -3,6 +3,7 @@ package com.pba.authservice.mapper;
 import com.pba.authservice.controller.request.UserUpdateRequest;
 import com.pba.authservice.persistance.model.ActiveUser;
 import com.pba.authservice.persistance.model.ActiveUserProfile;
+import com.pba.authservice.persistance.model.dtos.LoginDto;
 import com.pba.authservice.persistance.model.dtos.UserDto;
 import com.pba.authservice.persistance.model.dtos.UserProfileDto;
 import org.mapstruct.Context;
@@ -27,4 +28,7 @@ public interface ActiveUserMapper {
     @Mapping(target = "userId", expression = "java(userProfile.getUserId())")
     @Mapping(target = "email", expression = "java(userProfile.getEmail())")
     public ActiveUserProfile toUserProfile(UserUpdateRequest userUpdateRequest, @Context ActiveUserProfile userProfile);
+
+    @Mapping(target = "user", expression = "java(userDto)")
+    public LoginDto toLoginDto(UserDto userDto, String token);
 }
