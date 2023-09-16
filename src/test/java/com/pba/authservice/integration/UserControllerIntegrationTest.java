@@ -1,6 +1,10 @@
 package com.pba.authservice.integration;
 
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.pba.authservice.controller.advice.ApiExceptionResponse;
+import com.pba.authservice.controller.request.LoginRequest;
 import com.pba.authservice.controller.request.UserUpdateRequest;
+import com.pba.authservice.exceptions.ErrorCodes;
 import com.pba.authservice.mapper.PendingUserMapper;
 import com.pba.authservice.mockgenerators.ActiveUserMockGenerator;
 import com.pba.authservice.mockgenerators.PendingUserMockGenerator;
@@ -14,12 +18,14 @@ import com.pba.authservice.persistance.repository.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.util.Pair;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import java.util.Map;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -50,6 +56,7 @@ public class UserControllerIntegrationTest extends BaseControllerIntegrationTest
     @BeforeEach
     public void setUp() {
         objectMapper = new ObjectMapper();
+        objectMapper.registerModule(new JavaTimeModule());
     }
 
     @Test
@@ -172,10 +179,84 @@ public class UserControllerIntegrationTest extends BaseControllerIntegrationTest
         assertEquals(pendingUser.getUid(), activeUserDao.getAll().get(0).getUid());
     }
 
+    @Test
+    public void testLoginExistentUser() throws Exception {
+        // given
+        LoginRequest loginRequest = ActiveUserMockGenerator.generateMockLoginRequest();
+        Pair<ActiveUser, ActiveUserProfile> savedUser = this.saveActiveUser(loginRequest);
+        String loginEndpoint = "/api/user/login";
+        String loginRequestJSON = objectMapper.writeValueAsString(loginRequest);
+
+        // when
+        mockMvc.perform(MockMvcRequestBuilders.post(loginEndpoint)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(loginRequestJSON))
+                // then
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    public void testLoginNonexistentUser() throws Exception {
+        // given
+        LoginRequest loginRequest = ActiveUserMockGenerator.generateMockLoginRequest();
+        String loginEndpoint = "/api/user/login";
+        String loginRequestJSON = objectMapper.writeValueAsString(loginRequest);
+
+        // when
+        MvcResult result = mockMvc.perform(MockMvcRequestBuilders.post(loginEndpoint)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(loginRequestJSON))
+                .andExpect(status().isNotFound())
+                .andReturn();
+        String apiExceptionResponseJSON = result.getResponse().getContentAsString();
+        ApiExceptionResponse apiExceptionResponse = objectMapper.readValue(apiExceptionResponseJSON, ApiExceptionResponse.class);
+
+        // then
+        Map<String, String> expectedErrors = Map.of(
+                ErrorCodes.USER_NOT_FOUND,
+                String.format("User with username %s and password %s does not exist", loginRequest.getUsername(), loginRequest.getPassword())
+        );
+        assertEquals(expectedErrors, apiExceptionResponse.errors());
+    }
+
+    @Test
+    public void testLoginBadRequest() throws Exception {
+        // given
+        final String invalidUsername = null;
+        final String invalidPassword = null;
+        LoginRequest loginRequest = ActiveUserMockGenerator.generateMockLoginRequest(invalidUsername, invalidPassword);
+        String loginEndpoint = "/api/user/login";
+        String loginRequestJSON = objectMapper.writeValueAsString(loginRequest);
+
+        // when
+        MvcResult result = mockMvc.perform(MockMvcRequestBuilders.post(loginEndpoint)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(loginRequestJSON))
+                .andExpect(status().isBadRequest())
+                .andReturn();
+        String apiExceptionResponseJSON = result.getResponse().getContentAsString();
+        ApiExceptionResponse apiExceptionResponse = objectMapper.readValue(apiExceptionResponseJSON, ApiExceptionResponse.class);
+
+        // then
+        Map<String, String> expectedErrors = Map.of(
+                "password", "Password is mandatory",
+                "username", "Username is mandatory"
+        );
+        assertEquals(expectedErrors, apiExceptionResponse.errors());
+    }
+
     private void savePendingUser(UserCreateRequest userCreateRequest) {
         PendingUser pendingUser = pendingUserMapper.toPendingUser(userCreateRequest);
         PendingUser savedPendingUser = pendingUserDao.save(pendingUser);
         PendingUserProfile pendingUserProfile = pendingUserMapper.toPendingUserProfile(userCreateRequest, savedPendingUser.getId());
         pendingUserProfileDao.save(pendingUserProfile);
+    }
+
+    private Pair<ActiveUser, ActiveUserProfile> saveActiveUser(LoginRequest loginRequest) {
+        ActiveUser activeUser = ActiveUserMockGenerator.generateMockActiveUser(loginRequest.getUsername(), loginRequest.getPassword());
+        ActiveUser savedActiveUser = activeUserDao.save(activeUser);
+        ActiveUserProfile activeUserProfile = ActiveUserMockGenerator.generateMockActiveUserProfile(savedActiveUser.getId());
+        ActiveUserProfile savedUserProfile = activeUserProfileDao.save(activeUserProfile);
+        return Pair.of(savedActiveUser, savedUserProfile);
     }
 }

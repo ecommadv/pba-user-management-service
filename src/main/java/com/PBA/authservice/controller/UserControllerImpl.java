@@ -1,5 +1,6 @@
 package com.pba.authservice.controller;
 
+import com.pba.authservice.controller.request.LoginRequest;
 import com.pba.authservice.controller.request.UserUpdateRequest;
 import com.pba.authservice.facade.UserFacade;
 import com.pba.authservice.controller.request.UserCreateRequest;
@@ -40,5 +41,11 @@ public class UserControllerImpl implements UserController {
     public ResponseEntity<UserDto> updateUser(UUID userUid, UserUpdateRequest userUpdateRequest) {
         UserDto userDto = userFacade.updateUser(userUid, userUpdateRequest);
         return new ResponseEntity<>(userDto, HttpStatus.OK);
+    }
+
+    @Override
+    public ResponseEntity<String> loginUser(LoginRequest loginRequest) {
+        String token = userFacade.loginUser(loginRequest);
+        return new ResponseEntity<>(token, HttpStatus.OK);
     }
 }

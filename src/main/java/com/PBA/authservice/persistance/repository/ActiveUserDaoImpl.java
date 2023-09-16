@@ -34,4 +34,10 @@ public class ActiveUserDaoImpl extends JdbcRepository<ActiveUser, Long> implemen
         String sql = activeUserSqlProvider.selectByUsername();
         return jdbcTemplate.query(sql, activeUserRowMapper, username).stream().findFirst();
     }
+
+    @Override
+    public Optional<ActiveUser> findByUsernameAndPassword(String username, String password) {
+        String sql = activeUserSqlProvider.selectByUsernameAndPassword();
+        return jdbcTemplate.query(sql, activeUserRowMapper, username, password).stream().findFirst();
+    }
 }

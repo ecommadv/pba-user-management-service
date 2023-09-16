@@ -14,4 +14,5 @@ public interface ActiveUserDao {
     public ActiveUser update(ActiveUser activeUser, Long id);
     public Optional<ActiveUser> getByUid(UUID uid);
     public Optional<ActiveUser> getByUsername(String username);
+    public Optional<ActiveUser> findByUsernameAndPassword(String username, String password);
 }

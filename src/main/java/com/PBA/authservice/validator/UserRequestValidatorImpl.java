@@ -2,8 +2,8 @@ package com.pba.authservice.validator;
 
 import com.pba.authservice.controller.request.UserCreateRequest;
 import com.pba.authservice.controller.request.UserUpdateRequest;
+import com.pba.authservice.exceptions.EntityAlreadyExistsException;
 import com.pba.authservice.exceptions.ErrorCodes;
-import com.pba.authservice.exceptions.UserAlreadyExistsException;
 import com.pba.authservice.persistance.model.ActiveUser;
 import com.pba.authservice.persistance.model.ActiveUserProfile;
 import com.pba.authservice.service.ActiveUserService;
@@ -32,7 +32,7 @@ public class UserRequestValidatorImpl implements UserRequestValidator {
                     ? String.format("User with username %s already exists in the system", requestedUsername)
                     : "";
         if (!errorMessage.isBlank()) {
-            throw new UserAlreadyExistsException(ErrorCodes.USER_ALREADY_EXISTS, errorMessage);
+            throw new EntityAlreadyExistsException(ErrorCodes.USER_ALREADY_EXISTS, errorMessage);
         }
     }
 
@@ -45,7 +45,7 @@ public class UserRequestValidatorImpl implements UserRequestValidator {
         boolean userWithUsernameExists = pendingUserService.userWithUsernameExists(username) || activeUserService.userWithUsernameExists(username);
         if (requestedUsernameChange && userWithUsernameExists) {
             String errorMessage = String.format("User with username %s already exists in the system", username);
-            throw new UserAlreadyExistsException(ErrorCodes.USER_ALREADY_EXISTS, errorMessage);
+            throw new EntityAlreadyExistsException(ErrorCodes.USER_ALREADY_EXISTS, errorMessage);
         }
     }
 }

@@ -12,6 +12,7 @@ import com.pba.authservice.persistance.model.dtos.UserProfileDto;
 import com.pba.authservice.service.ActiveUserService;
 import com.pba.authservice.service.GroupService;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 @Component
 public class GroupFacadeImpl implements GroupFacade {

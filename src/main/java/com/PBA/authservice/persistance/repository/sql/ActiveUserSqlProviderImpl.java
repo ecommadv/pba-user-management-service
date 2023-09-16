@@ -69,4 +69,14 @@ public class ActiveUserSqlProviderImpl implements ActiveUserSqlProvider {
                     username = ?
                 """;
     }
+
+    @Override
+    public String selectByUsernameAndPassword() {
+        return """
+                SELECT id, uid, username, password
+                FROM active_user
+                WHERE
+                    username = ? AND password = ?
+                """;
+    }
 }

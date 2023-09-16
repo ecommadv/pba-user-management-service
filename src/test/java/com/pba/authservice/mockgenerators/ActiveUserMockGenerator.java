@@ -1,4 +1,5 @@
 package com.pba.authservice.mockgenerators;
+import com.pba.authservice.controller.request.LoginRequest;
 import com.pba.authservice.controller.request.UserUpdateRequest;
 import com.pba.authservice.persistance.model.ActiveUser;
 import com.pba.authservice.persistance.model.ActiveUserProfile;
@@ -52,6 +53,15 @@ public class ActiveUserMockGenerator {
         return generateMockActiveUserProfile(new Random().nextLong());
     }
 
+    public static ActiveUser generateMockActiveUser(String username, String password) {
+        return ActiveUser.builder()
+                .id(new Random().nextLong())
+                .uid(UUID.randomUUID())
+                .username(username)
+                .password(password)
+                .build();
+    }
+
     public static ActiveUserProfile generateMockActiveUserProfile(List<ActiveUser> activeUsers) {
         if (activeUsers.isEmpty()) {
             return null;
@@ -99,6 +109,20 @@ public class ActiveUserMockGenerator {
         return Stream.generate(ActiveUserMockGenerator::generateMockUserType)
                 .limit(sampleSize)
                 .collect(Collectors.toList());
+    }
+
+    public static LoginRequest generateMockLoginRequest() {
+        return LoginRequest.builder()
+                .username(generateMockUsername())
+                .password(generateMockPassword())
+                .build();
+    }
+
+    public static LoginRequest generateMockLoginRequest(String username, String password) {
+        return LoginRequest.builder()
+                .username(username)
+                .password(password)
+                .build();
     }
 
     private static String generateMockEmail() {
