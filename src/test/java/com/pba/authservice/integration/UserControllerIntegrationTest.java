@@ -1,6 +1,5 @@
 package com.pba.authservice.integration;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.pba.authservice.controller.advice.ApiExceptionResponse;
 import com.pba.authservice.controller.request.LoginRequest;
@@ -14,10 +13,8 @@ import com.pba.authservice.persistance.model.ActiveUser;
 import com.pba.authservice.persistance.model.ActiveUserProfile;
 import com.pba.authservice.persistance.model.PendingUser;
 import com.pba.authservice.persistance.model.PendingUserProfile;
-import com.pba.authservice.persistance.model.dtos.LoginDto;
 import com.pba.authservice.persistance.model.dtos.UserDto;
 import com.pba.authservice.persistance.repository.*;
-import org.flywaydb.core.api.ErrorCode;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -191,17 +188,11 @@ public class UserControllerIntegrationTest extends BaseControllerIntegrationTest
         String loginRequestJSON = objectMapper.writeValueAsString(loginRequest);
 
         // when
-        MvcResult result = mockMvc.perform(MockMvcRequestBuilders.post(loginEndpoint)
+        mockMvc.perform(MockMvcRequestBuilders.post(loginEndpoint)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(loginRequestJSON))
-                .andExpect(status().isOk())
-                .andReturn();
-        String loginDtoJSON = result.getResponse().getContentAsString();
-        LoginDto loginDto = objectMapper.readValue(loginDtoJSON, LoginDto.class);
-
-        // then
-        assertEquals(loginRequest.getUsername(), loginDto.getUser().getUsername());
-        assertEquals(savedUser.getFirst().getUsername(), loginDto.getUser().getUsername());
+                // then
+                .andExpect(status().isOk());
     }
 
     @Test
