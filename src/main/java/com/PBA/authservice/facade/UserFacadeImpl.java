@@ -10,7 +10,6 @@ import com.pba.authservice.persistance.model.ActiveUser;
 import com.pba.authservice.persistance.model.ActiveUserProfile;
 import com.pba.authservice.persistance.model.PendingUser;
 import com.pba.authservice.persistance.model.PendingUserProfile;
-import com.pba.authservice.persistance.model.dtos.LoginDto;
 import com.pba.authservice.persistance.model.dtos.UserDto;
 import com.pba.authservice.persistance.model.dtos.UserProfileDto;
 import com.pba.authservice.service.*;
@@ -102,14 +101,9 @@ public class UserFacadeImpl implements UserFacade {
     }
 
     @Override
-    public LoginDto loginUser(LoginRequest loginRequest) {
+    public String loginUser(LoginRequest loginRequest) {
         ActiveUser user = activeUserService.findByUsernameAndPassword(loginRequest.getUsername(), loginRequest.getPassword());
-        String token = jwtService.generateAccessToken(user);
-
-        ActiveUserProfile userProfile = activeUserService.getProfileByUserId(user.getId());
-        UserProfileDto userProfileDto = activeUserMapper.toUserProfileDto(userProfile);
-        UserDto userDto = activeUserMapper.toUserDto(user, userProfileDto);
-        return activeUserMapper.toLoginDto(userDto, token);
+        return jwtService.generateAccessToken(user);
     }
 
     private void deletePendingUser(PendingUser pendingUser, PendingUserProfile pendingUserProfile) {

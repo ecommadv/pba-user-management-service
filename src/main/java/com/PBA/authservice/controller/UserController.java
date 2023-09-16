@@ -3,7 +3,6 @@ package com.pba.authservice.controller;
 import com.pba.authservice.controller.request.LoginRequest;
 import com.pba.authservice.controller.request.UserCreateRequest;
 import com.pba.authservice.controller.request.UserUpdateRequest;
-import com.pba.authservice.persistance.model.dtos.LoginDto;
 import com.pba.authservice.persistance.model.dtos.UserDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -62,5 +61,5 @@ public interface UserController {
             @ApiResponse(responseCode = "404", description = "Not Found")
     })
     @PostMapping("/login")
-    public ResponseEntity<LoginDto> loginUser(@Valid @RequestBody LoginRequest loginRequest);
+    public ResponseEntity<String> loginUser(@Valid @RequestBody LoginRequest loginRequest);
 }
