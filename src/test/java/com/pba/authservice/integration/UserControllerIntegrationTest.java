@@ -214,7 +214,7 @@ public class UserControllerIntegrationTest extends BaseControllerIntegrationTest
         // then
         Map<String, String> expectedErrors = Map.of(
                 ErrorCodes.USER_NOT_FOUND,
-                String.format("User with username %s and password %s does not exist", loginRequest.getUsername(), loginRequest.getPassword())
+                "Invalid username/password combination"
         );
         assertEquals(expectedErrors, apiExceptionResponse.errors());
     }
