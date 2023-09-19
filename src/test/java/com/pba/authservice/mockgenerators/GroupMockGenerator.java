@@ -47,11 +47,9 @@ public class GroupMockGenerator {
                 .collect(Collectors.toList());
     }
 
-    public static GroupCreateRequest generateMockGroupCreateRequest(List<ActiveUser> users) {
-        List<UUID> userUids = users.stream().map(ActiveUser::getUid).collect(Collectors.toList());
+    public static GroupCreateRequest generateMockGroupCreateRequest() {
         return GroupCreateRequest.builder()
                 .groupName(UUID.randomUUID().toString())
-                .userUid(getRandomUid(userUids))
                 .build();
     }
 

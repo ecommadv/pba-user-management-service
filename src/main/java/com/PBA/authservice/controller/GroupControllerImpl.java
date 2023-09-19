@@ -16,8 +16,8 @@ public class GroupControllerImpl implements GroupController {
     }
 
     @Override
-    public ResponseEntity<GroupDto> createGroup(GroupCreateRequest groupCreateRequest) {
-        GroupDto groupDto = groupFacade.createGroup(groupCreateRequest);
+    public ResponseEntity<GroupDto> createGroup(GroupCreateRequest groupCreateRequest, String authHeader) {
+        GroupDto groupDto = groupFacade.createGroup(groupCreateRequest, authHeader);
         return new ResponseEntity<>(groupDto, HttpStatus.CREATED);
     }
 }

@@ -15,6 +15,7 @@ import com.pba.authservice.persistance.model.PendingUser;
 import com.pba.authservice.persistance.model.PendingUserProfile;
 import com.pba.authservice.persistance.model.dtos.UserDto;
 import com.pba.authservice.persistance.repository.*;
+import com.pba.authservice.service.JwtService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,13 +41,16 @@ public class UserControllerIntegrationTest extends BaseControllerIntegrationTest
     private PendingUserProfileDao pendingUserProfileDao;
 
     @Autowired
-    private ActiveUserDao activeUserDao;
+    private ActiveUserDao userDao;
 
     @Autowired
-    private ActiveUserProfileDao activeUserProfileDao;
+    private ActiveUserProfileDao userProfileDao;
 
     @Autowired
     private PendingUserMapper pendingUserMapper;
+
+    @Autowired
+    private JwtService jwtService;
 
     @Autowired
     private MockMvc mockMvc;
@@ -104,27 +108,29 @@ public class UserControllerIntegrationTest extends BaseControllerIntegrationTest
         // given
         UserUpdateRequest userUpdateRequest = ActiveUserMockGenerator.generateMockUserUpdateRequest();
         ActiveUser activeUser = ActiveUserMockGenerator.generateMockActiveUser();
-        ActiveUser savedActiveUser = activeUserDao.save(activeUser);
-        ActiveUserProfile activeUserProfile = ActiveUserMockGenerator.generateMockActiveUserProfile(activeUserDao.getAll());
-        ActiveUserProfile savedUserProfile = activeUserProfileDao.save(activeUserProfile);
-        UUID userToUpdateUid = savedActiveUser.getUid();
-        String updateUserEndpoint = String.format("/api/user/%s", userToUpdateUid);
+        ActiveUser savedActiveUser = userDao.save(activeUser);
+        ActiveUserProfile activeUserProfile = ActiveUserMockGenerator.generateMockActiveUserProfile(savedActiveUser.getId());
+        userProfileDao.save(activeUserProfile);
+        String updateUserEndpoint = "/api/user";
         String userUpdateRequestJSON = objectMapper.writeValueAsString(userUpdateRequest);
+        String token = this.getValidTokenForUser(activeUser);
+        String authHeaderValue = String.format("Bearer %s", token);
 
         // when
         MvcResult result = mockMvc.perform(MockMvcRequestBuilders.put(updateUserEndpoint)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(userUpdateRequestJSON))
+                        .content(userUpdateRequestJSON)
+                        .header("Authorization", authHeaderValue))
                 .andExpect(status().isOk())
                 .andReturn();
 
         // then
-        assertEquals(1, activeUserDao.getAll().size());
-        assertEquals(1, activeUserProfileDao.getAll().size());
-        assertTrue(activeUserDao.getByUid(userToUpdateUid).isPresent());
-        assertTrue(activeUserProfileDao.getByUserId(savedActiveUser.getId()).isPresent());
-        ActiveUser updatedActiveUser = activeUserDao.getByUid(userToUpdateUid).get();
-        ActiveUserProfile updatedUserProfile = activeUserProfileDao.getByUserId(savedActiveUser.getId()).get();
+        assertEquals(1, userDao.getAll().size());
+        assertEquals(1, userProfileDao.getAll().size());
+        assertTrue(userDao.getByUid(activeUser.getUid()).isPresent());
+        assertTrue(userProfileDao.getByUserId(savedActiveUser.getId()).isPresent());
+        ActiveUser updatedActiveUser = userDao.getByUid(activeUser.getUid()).get();
+        ActiveUserProfile updatedUserProfile = userProfileDao.getByUserId(savedActiveUser.getId()).get();
         assertEquals(userUpdateRequest.getUsername(), updatedActiveUser.getUsername());
         assertEquals(userUpdateRequest.getFirstName(), updatedUserProfile.getFirstName());
         assertEquals(userUpdateRequest.getLastName(), updatedUserProfile.getLastName());
@@ -136,13 +142,16 @@ public class UserControllerIntegrationTest extends BaseControllerIntegrationTest
     public void testGetActiveUser() throws Exception {
         // given
         ActiveUser activeUser = ActiveUserMockGenerator.generateMockActiveUser();
-        ActiveUser savedActiveUser = activeUserDao.save(activeUser);
-        ActiveUserProfile activeUserProfile = ActiveUserMockGenerator.generateMockActiveUserProfile(savedActiveUser.getId());
-        ActiveUserProfile savedActiveUserProfile = activeUserProfileDao.save(activeUserProfile);
-        String getUserEndpoint = String.format("/api/user/%s", activeUser.getUid().toString());
+        ActiveUser savedActiveUser = userDao.save(activeUser);
+        ActiveUserProfile userProfile = ActiveUserMockGenerator.generateMockActiveUserProfile(savedActiveUser.getId());
+        userProfileDao.save(userProfile);
+        String getUserEndpoint = "/api/user";
+        String token = this.getValidTokenForUser(activeUser);
+        String authHeaderValue = String.format("Bearer %s", token);
 
         // when
-        MvcResult result = mockMvc.perform(MockMvcRequestBuilders.get(getUserEndpoint))
+        MvcResult result = mockMvc.perform(MockMvcRequestBuilders.get(getUserEndpoint)
+                        .header("Authorization", authHeaderValue))
                 .andExpect(status().isOk())
                 .andReturn();
         String userDtoJSON = result.getResponse().getContentAsString();
@@ -150,11 +159,11 @@ public class UserControllerIntegrationTest extends BaseControllerIntegrationTest
 
         // then
         assertEquals(activeUser.getUid(), userDto.getUid());
-        assertEquals(activeUserProfile.getFirstName(), userDto.getUserProfile().getFirstName());
-        assertEquals(activeUserProfile.getLastName(), userDto.getUserProfile().getLastName());
-        assertEquals(activeUserProfile.getCountry(), userDto.getUserProfile().getCountry());
-        assertEquals(activeUserProfile.getEmail(), userDto.getUserProfile().getEmail());
-        assertEquals(activeUserProfile.getAge(), userDto.getUserProfile().getAge());
+        assertEquals(userProfile.getFirstName(), userDto.getUserProfile().getFirstName());
+        assertEquals(userProfile.getLastName(), userDto.getUserProfile().getLastName());
+        assertEquals(userProfile.getCountry(), userDto.getUserProfile().getCountry());
+        assertEquals(userProfile.getEmail(), userDto.getUserProfile().getEmail());
+        assertEquals(userProfile.getAge(), userDto.getUserProfile().getAge());
     }
 
     @Test
@@ -174,9 +183,9 @@ public class UserControllerIntegrationTest extends BaseControllerIntegrationTest
         // then
         assertEquals(0, pendingUserDao.getAll().size());
         assertEquals(0, pendingUserProfileDao.getAll().size());
-        assertEquals(1, activeUserDao.getAll().size());
-        assertEquals(1, activeUserProfileDao.getAll().size());
-        assertEquals(pendingUser.getUid(), activeUserDao.getAll().get(0).getUid());
+        assertEquals(1, userDao.getAll().size());
+        assertEquals(1, userProfileDao.getAll().size());
+        assertEquals(pendingUser.getUid(), userDao.getAll().get(0).getUid());
     }
 
     @Test
@@ -254,9 +263,13 @@ public class UserControllerIntegrationTest extends BaseControllerIntegrationTest
 
     private Pair<ActiveUser, ActiveUserProfile> saveActiveUser(LoginRequest loginRequest) {
         ActiveUser activeUser = ActiveUserMockGenerator.generateMockActiveUser(loginRequest.getUsername(), loginRequest.getPassword());
-        ActiveUser savedActiveUser = activeUserDao.save(activeUser);
+        ActiveUser savedActiveUser = userDao.save(activeUser);
         ActiveUserProfile activeUserProfile = ActiveUserMockGenerator.generateMockActiveUserProfile(savedActiveUser.getId());
-        ActiveUserProfile savedUserProfile = activeUserProfileDao.save(activeUserProfile);
+        ActiveUserProfile savedUserProfile = userProfileDao.save(activeUserProfile);
         return Pair.of(savedActiveUser, savedUserProfile);
+    }
+
+    private String getValidTokenForUser(ActiveUser user) throws Exception {
+        return jwtService.generateAccessToken(user);
     }
 }

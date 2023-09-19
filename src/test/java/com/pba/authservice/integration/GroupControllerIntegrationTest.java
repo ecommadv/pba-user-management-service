@@ -5,12 +5,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.pba.authservice.controller.advice.ApiExceptionResponse;
 import com.pba.authservice.controller.request.GroupCreateRequest;
+import com.pba.authservice.controller.request.LoginRequest;
 import com.pba.authservice.exceptions.ErrorCodes;
 import com.pba.authservice.mockgenerators.ActiveUserMockGenerator;
 import com.pba.authservice.mockgenerators.GroupMockGenerator;
 import com.pba.authservice.persistance.model.*;
 import com.pba.authservice.persistance.model.dtos.GroupDto;
 import com.pba.authservice.persistance.repository.*;
+import com.pba.authservice.service.JwtService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,6 +49,9 @@ public class GroupControllerIntegrationTest extends BaseControllerIntegrationTes
     @Autowired
     private UserTypeDao userTypeDao;
 
+    @Autowired
+    private JwtService jwtService;
+
     private ObjectMapper objectMapper;
 
     @BeforeEach
@@ -58,16 +63,19 @@ public class GroupControllerIntegrationTest extends BaseControllerIntegrationTes
     @Test
     public void testCreateGroup() throws Exception {
         // given
-        this.addMockUsers();
-        GroupCreateRequest groupCreateRequest = GroupMockGenerator.generateMockGroupCreateRequest(userDao.getAll());
-        ActiveUser groupAdmin = userDao.getByUid(groupCreateRequest.getUserUid()).get();
+        GroupCreateRequest groupCreateRequest = GroupMockGenerator.generateMockGroupCreateRequest();
+        ActiveUser groupAdmin = ActiveUserMockGenerator.generateMockActiveUser();
+        String token = this.loginUserAndGetValidToken(groupAdmin);
+        ActiveUser savedGroupAdmin = userDao.getByUsername(groupAdmin.getUsername()).get();
         String createGroupEndpoint = "/api/group";
         String groupCreateRequestJSON = objectMapper.writeValueAsString(groupCreateRequest);
+        String authHeaderValue = String.format("Bearer %s", token);
 
         // when
         MvcResult result = mockMvc.perform(MockMvcRequestBuilders.post(createGroupEndpoint)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(groupCreateRequestJSON))
+                        .content(groupCreateRequestJSON)
+                        .header("Authorization", authHeaderValue))
                 .andExpect(status().isCreated())
                 .andReturn();
         String groupDtoJSON = result.getResponse().getContentAsString();
@@ -84,7 +92,7 @@ public class GroupControllerIntegrationTest extends BaseControllerIntegrationTes
         assertEquals(groupAdmin.getUid(), groupDto.getGroupAdmin().getUid());
         assertEquals(groupAdmin.getUsername(), groupDto.getGroupAdmin().getUsername());
 
-        Optional<GroupMember> savedGroupMember = groupMemberDao.getByUserId(groupAdmin.getId());
+        Optional<GroupMember> savedGroupMember = groupMemberDao.getByUserId(savedGroupAdmin.getId());
         assertTrue(savedGroupMember.isPresent());
         assertEquals(savedGroup.get().getId(), savedGroupMember.get().getGroupId());
         Optional<UserType> adminUserType = userTypeDao.getByName("admin");
@@ -95,17 +103,18 @@ public class GroupControllerIntegrationTest extends BaseControllerIntegrationTes
     @Test
     public void testCreateGroupByNonexistentUser() throws Exception {
         // given
-        this.addMockUsers();
-        GroupCreateRequest groupCreateRequest = GroupMockGenerator.generateMockGroupCreateRequest(userDao.getAll());
-        UUID nonexistentUserUid = UUID.randomUUID();
-        groupCreateRequest.setUserUid(nonexistentUserUid);
+        GroupCreateRequest groupCreateRequest = GroupMockGenerator.generateMockGroupCreateRequest();
         String groupCreateRequestJSON = objectMapper.writeValueAsString(groupCreateRequest);
+        ActiveUser user = ActiveUserMockGenerator.generateMockActiveUser();
+        String invalidToken = jwtService.generateAccessToken(user);
+        String authHeaderValue = String.format("Bearer %s", invalidToken);
         String createGroupEndpoint = "/api/group";
 
         // when
         MvcResult result = mockMvc.perform(MockMvcRequestBuilders.post(createGroupEndpoint)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(groupCreateRequestJSON))
+                        .content(groupCreateRequestJSON)
+                        .header("Authorization", authHeaderValue))
                 .andExpect(status().isNotFound())
                 .andReturn();
         String apiExceptionResponseJSON = result.getResponse().getContentAsString();
@@ -116,7 +125,7 @@ public class GroupControllerIntegrationTest extends BaseControllerIntegrationTes
         assertEquals(0, groupMemberDao.getAll().size());
         Map<String, String> expectedErrorMap = Map.of(
                 ErrorCodes.USER_NOT_FOUND,
-                String.format("User with uid %s does not exist!", groupCreateRequest.getUserUid())
+                String.format("User with uid %s does not exist!", user.getUid())
         );
         assertEquals(expectedErrorMap, apiExceptionResponse.errors());
     }
@@ -124,16 +133,19 @@ public class GroupControllerIntegrationTest extends BaseControllerIntegrationTes
     @Test
     public void testCreateGroupWhichAlreadyExists() throws Exception {
         // given
-        this.addMockUsers();
-        GroupCreateRequest groupCreateRequest = GroupMockGenerator.generateMockGroupCreateRequest(userDao.getAll());
+        GroupCreateRequest groupCreateRequest = GroupMockGenerator.generateMockGroupCreateRequest();
         this.addGroupWithName(groupCreateRequest.getGroupName());
+        ActiveUser groupAdmin = ActiveUserMockGenerator.generateMockActiveUser();
+        String token = this.loginUserAndGetValidToken(groupAdmin);
         String createGroupEndpoint = "/api/group";
         String groupCreateRequestJSON = objectMapper.writeValueAsString(groupCreateRequest);
+        String authHeaderValue = String.format("Bearer %s", token);
 
         // when
         MvcResult result = mockMvc.perform(MockMvcRequestBuilders.post(createGroupEndpoint)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(groupCreateRequestJSON))
+                        .content(groupCreateRequestJSON)
+                        .header("Authorization", authHeaderValue))
                 .andExpect(status().isBadRequest())
                 .andReturn();
         String apiExceptionResponseJSON = result.getResponse().getContentAsString();
@@ -149,18 +161,24 @@ public class GroupControllerIntegrationTest extends BaseControllerIntegrationTes
         assertEquals(expectedErrorMap, apiExceptionResponse.errors());
     }
 
-    private void addMockUsers() {
-        final int sampleSize = 10;
-        List<ActiveUser> users = ActiveUserMockGenerator.generateMockListOfActiveUsers(sampleSize);
-        users.forEach(user -> userDao.save(user));
-
-        List<ActiveUserProfile> userProfiles = ActiveUserMockGenerator.generateMockListOfActiveUserProfiles(userDao.getAll());
-        userProfiles.forEach(userProfile -> userProfileDao.save(userProfile));
-    }
-
     private void addGroupWithName(String name) {
         Group group = GroupMockGenerator.generateMockGroup();
         group.setName(name);
         groupDao.save(group);
+    }
+
+    private String loginUserAndGetValidToken(ActiveUser user) throws Exception {
+        ActiveUser savedUser = userDao.save(user);
+        ActiveUserProfile userProfile = ActiveUserMockGenerator.generateMockActiveUserProfile(savedUser.getId());
+        userProfileDao.save(userProfile);
+        LoginRequest loginRequest = ActiveUserMockGenerator.generateMockLoginRequest(user.getUsername(), user.getPassword());
+        String loginRequestJSON = objectMapper.writeValueAsString(loginRequest);
+        String loginEndpoint = "/api/user/login";
+
+        MvcResult result = mockMvc.perform(MockMvcRequestBuilders.post(loginEndpoint)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(loginRequestJSON))
+                .andReturn();
+        return result.getResponse().getContentAsString();
     }
 }

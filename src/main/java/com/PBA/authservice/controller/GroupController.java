@@ -7,10 +7,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/group")
@@ -22,5 +19,6 @@ public interface GroupController {
             @ApiResponse(responseCode = "404", description = "Not Found")
     })
     @PostMapping
-    public ResponseEntity<GroupDto> createGroup(@Valid @RequestBody GroupCreateRequest groupCreateRequest);
+    public ResponseEntity<GroupDto> createGroup(@Valid @RequestBody GroupCreateRequest groupCreateRequest,
+                                                @RequestHeader("Authorization") String authHeader);
 }

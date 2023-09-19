@@ -16,7 +16,4 @@ import java.util.UUID;
 public class GroupCreateRequest {
     @NotBlank(message = "{groupName.notblank}")
     private String groupName;
-
-    @NotNull(message = "{userUid.notnull}")
-    private UUID userUid;
 }
