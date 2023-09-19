@@ -32,8 +32,8 @@ public interface UserController {
             @ApiResponse(responseCode = "400", description = "Bad Request"),
             @ApiResponse(responseCode = "404", description = "Not Found")
     })
-    @GetMapping("/{uid}")
-    public ResponseEntity<UserDto> getActiveUser(@PathVariable("uid") UUID uid);
+    @GetMapping
+    public ResponseEntity<UserDto> getActiveUser(@RequestHeader("Authorization") String authHeader);
 
     @Operation(summary = "Validates the user with the given validation code, if they exist.")
     @ApiResponses(value = {
@@ -50,8 +50,8 @@ public interface UserController {
             @ApiResponse(responseCode = "400", description = "Bad Request"),
             @ApiResponse(responseCode = "404", description = "Not Found")
     })
-    @PutMapping("/{uid}")
-    public ResponseEntity<UserDto> updateUser(@PathVariable("uid") UUID userUid,
+    @PutMapping
+    public ResponseEntity<UserDto> updateUser(@RequestHeader("Authorization") String authHeader,
                                               @Valid @RequestBody UserUpdateRequest userUpdateRequest);
 
     @Operation(summary = "Logins an user to the system.")

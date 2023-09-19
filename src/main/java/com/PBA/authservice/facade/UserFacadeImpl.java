@@ -61,8 +61,9 @@ public class UserFacadeImpl implements UserFacade {
     }
 
     @Override
-    public UserDto getUser(UUID uid) {
-        ActiveUser activeUser = activeUserService.getUserByUid(uid);
+    public UserDto getUser(String authHeader) {
+        UUID userUid = jwtService.extractUserUidFromHeader(authHeader);
+        ActiveUser activeUser = activeUserService.getUserByUid(userUid);
         ActiveUserProfile activeUserProfile = activeUserService.getProfileByUserId(activeUser.getId());
 
         UserProfileDto userProfileDto = activeUserMapper.toUserProfileDto(activeUserProfile);
@@ -86,8 +87,9 @@ public class UserFacadeImpl implements UserFacade {
 
     @Override
     @Transactional
-    public UserDto updateUser(UUID userUid, UserUpdateRequest userUpdateRequest) {
-        ActiveUser userToUpdate = activeUserService.getUserByUid(userUid);
+    public UserDto updateUser(String authHeader, UserUpdateRequest userUpdateRequest) {
+        UUID userToUpdateUid = jwtService.extractUserUidFromHeader(authHeader);
+        ActiveUser userToUpdate = activeUserService.getUserByUid(userToUpdateUid);
         ActiveUserProfile profileToUpdate = activeUserService.getProfileByUserId(userToUpdate.getId());
 
         userRequestValidator.validateUserDoesNotAlreadyExistWhenUpdate(userUpdateRequest, userToUpdate, profileToUpdate);
