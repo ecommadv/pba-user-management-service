@@ -1,4 +1,4 @@
-package com.pba.authservice.service;
+package com.pba.authservice.security;
 
 import com.pba.authservice.exceptions.AuthorizationException;
 import com.pba.authservice.persistance.model.ActiveUser;
@@ -15,7 +15,7 @@ import java.util.UUID;
 import java.util.function.Function;
 
 @Component
-public class JwtServiceImpl implements JwtService {
+public class JwtUtilsImpl implements JwtUtils {
     private static final long JWT_TOKEN_VALIDITY = 24 * 60 * 60 * 1000; // 24 hours
 
     @Value("${jwt.secret}")

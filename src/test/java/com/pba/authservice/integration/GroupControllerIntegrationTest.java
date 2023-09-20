@@ -1,6 +1,5 @@
 package com.pba.authservice.integration;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.pba.authservice.controller.advice.ApiExceptionResponse;
@@ -12,7 +11,7 @@ import com.pba.authservice.mockgenerators.GroupMockGenerator;
 import com.pba.authservice.persistance.model.*;
 import com.pba.authservice.persistance.model.dtos.GroupDto;
 import com.pba.authservice.persistance.repository.*;
-import com.pba.authservice.service.JwtService;
+import com.pba.authservice.security.JwtUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,10 +20,8 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.UUID;
 
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -50,7 +47,7 @@ public class GroupControllerIntegrationTest extends BaseControllerIntegrationTes
     private UserTypeDao userTypeDao;
 
     @Autowired
-    private JwtService jwtService;
+    private JwtUtils jwtService;
 
     private ObjectMapper objectMapper;
 

@@ -9,9 +9,9 @@ import com.pba.authservice.persistance.model.*;
 import com.pba.authservice.persistance.model.dtos.GroupDto;
 import com.pba.authservice.persistance.model.dtos.UserDto;
 import com.pba.authservice.persistance.model.dtos.UserProfileDto;
+import com.pba.authservice.security.JwtSecurityService;
 import com.pba.authservice.service.ActiveUserService;
 import com.pba.authservice.service.GroupService;
-import com.pba.authservice.service.JwtService;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,22 +23,22 @@ public class GroupFacadeImpl implements GroupFacade {
     private final GroupMapper groupMapper;
     private final ActiveUserService userService;
     private final ActiveUserMapper userMapper;
-    private final JwtService jwtService;
+    private final JwtSecurityService jwtSecurityService;
 
-    public GroupFacadeImpl(GroupService groupService, ActiveUserService userService, GroupMapper groupMapper, ActiveUserMapper userMapper, JwtService jwtService) {
+    public GroupFacadeImpl(GroupService groupService, ActiveUserService userService, GroupMapper groupMapper, ActiveUserMapper userMapper, JwtSecurityService jwtSecurityService) {
         this.groupService = groupService;
         this.groupMapper = groupMapper;
         this.userService = userService;
         this.userMapper = userMapper;
-        this.jwtService = jwtService;
+        this.jwtSecurityService = jwtSecurityService;
     }
 
     @Override
     @Transactional
-    public GroupDto createGroup(GroupCreateRequest groupCreateRequest, String authHeader) {
+    public GroupDto createGroup(GroupCreateRequest groupCreateRequest) {
         this.validateGroupDoesNotAlreadyExist(groupCreateRequest);
 
-        UUID groupCreatorUid = jwtService.extractUserUidFromHeader(authHeader);
+        UUID groupCreatorUid = jwtSecurityService.getCurrentUserUid();
         ActiveUser groupCreator = userService.getUserByUid(groupCreatorUid);
         Group groupToCreate = groupMapper.toGroup(groupCreateRequest);
         Group createdGroup = groupService.addGroup(groupToCreate);

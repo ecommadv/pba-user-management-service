@@ -15,7 +15,7 @@ import com.pba.authservice.persistance.model.PendingUser;
 import com.pba.authservice.persistance.model.PendingUserProfile;
 import com.pba.authservice.persistance.model.dtos.UserDto;
 import com.pba.authservice.persistance.repository.*;
-import com.pba.authservice.service.JwtService;
+import com.pba.authservice.security.JwtUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,7 +27,6 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.util.Map;
-import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -50,7 +49,7 @@ public class UserControllerIntegrationTest extends BaseControllerIntegrationTest
     private PendingUserMapper pendingUserMapper;
 
     @Autowired
-    private JwtService jwtService;
+    private JwtUtils jwtService;
 
     @Autowired
     private MockMvc mockMvc;

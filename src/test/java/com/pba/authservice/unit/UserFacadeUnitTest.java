@@ -12,9 +12,9 @@ import com.pba.authservice.controller.request.UserCreateRequest;
 import com.pba.authservice.persistance.model.PendingUserProfile;
 import com.pba.authservice.persistance.model.dtos.UserDto;
 import com.pba.authservice.persistance.model.dtos.UserProfileDto;
+import com.pba.authservice.security.JwtSecurityService;
 import com.pba.authservice.service.ActiveUserService;
 import com.pba.authservice.service.EmailService;
-import com.pba.authservice.service.JwtService;
 import com.pba.authservice.service.PendingUserService;
 import com.pba.authservice.validator.UserRequestValidator;
 import org.junit.jupiter.api.Test;
@@ -53,7 +53,7 @@ public class UserFacadeUnitTest {
     private UserRequestValidator userRequestValidator;
 
     @Mock
-    private JwtService jwtService;
+    private JwtSecurityService jwtSecurityService;
 
     @Test
     public void testRegisterUser() {
@@ -86,16 +86,15 @@ public class UserFacadeUnitTest {
         UserDto userDto = ActiveUserMockGenerator.generateMockActiveUserDto();
         UserProfileDto userProfileDto = ActiveUserMockGenerator.generateMockUserProfileDto();
         ActiveUserProfile activeUserProfile = ActiveUserMockGenerator.generateMockActiveUserProfile();
-        String authHeader = "Bearer token";
         UUID uid = UUID.randomUUID();
-        when(jwtService.extractUserUidFromHeader(authHeader)).thenReturn(uid);
+        when(jwtSecurityService.getCurrentUserUid()).thenReturn(uid);
         when(activeUserService.getUserByUid(uid)).thenReturn(activeUser);
         when(activeUserService.getProfileByUserId(activeUser.getId())).thenReturn(activeUserProfile);
         when(activeUserMapper.toUserProfileDto(activeUserProfile)).thenReturn(userProfileDto);
         when(activeUserMapper.toUserDto(activeUser, userProfileDto)).thenReturn(userDto);
 
         // when
-        UserDto result = userFacade.getUser(authHeader);
+        UserDto result = userFacade.getUser();
 
         // then
         assertEquals(userDto, result);

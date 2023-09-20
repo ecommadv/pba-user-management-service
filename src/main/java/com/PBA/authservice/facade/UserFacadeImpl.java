@@ -12,6 +12,8 @@ import com.pba.authservice.persistance.model.PendingUser;
 import com.pba.authservice.persistance.model.PendingUserProfile;
 import com.pba.authservice.persistance.model.dtos.UserDto;
 import com.pba.authservice.persistance.model.dtos.UserProfileDto;
+import com.pba.authservice.security.JwtSecurityService;
+import com.pba.authservice.security.JwtUtils;
 import com.pba.authservice.service.*;
 import com.pba.authservice.controller.request.UserCreateRequest;
 import com.pba.authservice.validator.UserRequestValidator;
@@ -29,7 +31,7 @@ public class UserFacadeImpl implements UserFacade {
     private final ActiveUserMapper activeUserMapper;
     private final EmailService emailService;
     private final UserRequestValidator userRequestValidator;
-    private final JwtService jwtService;
+    private final JwtSecurityService jwtSecurityService;
 
     public UserFacadeImpl(PendingUserService pendingUserService,
                           PendingUserMapper pendingUserMapper,
@@ -37,14 +39,14 @@ public class UserFacadeImpl implements UserFacade {
                           ActiveUserMapper activeUserMapper,
                           EmailService emailService,
                           UserRequestValidator userRequestValidator,
-                          JwtService jwtService) {
+                          JwtSecurityService jwtSecurityService) {
         this.pendingUserService = pendingUserService;
         this.pendingUserMapper = pendingUserMapper;
         this.activeUserService = activeUserService;
         this.activeUserMapper = activeUserMapper;
         this.emailService = emailService;
         this.userRequestValidator = userRequestValidator;
-        this.jwtService = jwtService;
+        this.jwtSecurityService = jwtSecurityService;
     }
 
     @Override
@@ -61,8 +63,8 @@ public class UserFacadeImpl implements UserFacade {
     }
 
     @Override
-    public UserDto getUser(String authHeader) {
-        UUID userUid = jwtService.extractUserUidFromHeader(authHeader);
+    public UserDto getUser() {
+        UUID userUid = jwtSecurityService.getCurrentUserUid();
         ActiveUser activeUser = activeUserService.getUserByUid(userUid);
         ActiveUserProfile activeUserProfile = activeUserService.getProfileByUserId(activeUser.getId());
 
@@ -87,8 +89,8 @@ public class UserFacadeImpl implements UserFacade {
 
     @Override
     @Transactional
-    public UserDto updateUser(String authHeader, UserUpdateRequest userUpdateRequest) {
-        UUID userToUpdateUid = jwtService.extractUserUidFromHeader(authHeader);
+    public UserDto updateUser(UserUpdateRequest userUpdateRequest) {
+        UUID userToUpdateUid = jwtSecurityService.getCurrentUserUid();
         ActiveUser userToUpdate = activeUserService.getUserByUid(userToUpdateUid);
         ActiveUserProfile profileToUpdate = activeUserService.getProfileByUserId(userToUpdate.getId());
 
@@ -105,7 +107,7 @@ public class UserFacadeImpl implements UserFacade {
     @Override
     public String loginUser(LoginRequest loginRequest) {
         ActiveUser user = activeUserService.findByUsernameAndPassword(loginRequest.getUsername(), loginRequest.getPassword());
-        return jwtService.generateAccessToken(user);
+        return jwtSecurityService.generateAccessToken(user);
     }
 
     private void deletePendingUser(PendingUser pendingUser, PendingUserProfile pendingUserProfile) {
