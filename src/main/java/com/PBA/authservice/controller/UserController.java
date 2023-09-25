@@ -26,14 +26,14 @@ public interface UserController {
             @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "User to register")
             @Valid @RequestBody UserCreateRequest userCreateRequest);
 
-    @Operation(summary = "Retrieves from the system the active user with the specified uid, if they exist in the system.")
+    @Operation(summary = "Retrieves from the system the current logged in user.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "OK"),
             @ApiResponse(responseCode = "400", description = "Bad Request"),
             @ApiResponse(responseCode = "404", description = "Not Found")
     })
     @GetMapping
-    public ResponseEntity<UserDto> getActiveUser(@RequestHeader("Authorization") String authHeader);
+    public ResponseEntity<UserDto> getActiveUser();
 
     @Operation(summary = "Validates the user with the given validation code, if they exist.")
     @ApiResponses(value = {
@@ -51,8 +51,7 @@ public interface UserController {
             @ApiResponse(responseCode = "404", description = "Not Found")
     })
     @PutMapping
-    public ResponseEntity<UserDto> updateUser(@RequestHeader("Authorization") String authHeader,
-                                              @Valid @RequestBody UserUpdateRequest userUpdateRequest);
+    public ResponseEntity<UserDto> updateUser(@Valid @RequestBody UserUpdateRequest userUpdateRequest);
 
     @Operation(summary = "Logins an user to the system.")
     @ApiResponses(value = {

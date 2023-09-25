@@ -1,6 +1,7 @@
 package com.pba.authservice.mockgenerators;
 
 import com.pba.authservice.controller.request.GroupCreateRequest;
+import com.pba.authservice.controller.request.GroupInviteRequest;
 import com.pba.authservice.persistance.model.ActiveUser;
 import com.pba.authservice.persistance.model.Group;
 import com.pba.authservice.persistance.model.GroupMember;
@@ -28,17 +29,25 @@ public class GroupMockGenerator {
                 .collect(Collectors.toList());
     }
 
+    public static GroupMember generateMockGroupMember(Long userId, Long userTypeId, Long groupId) {
+        return GroupMember.builder()
+                .id(new Random().nextLong())
+                .userId(userId)
+                .userTypeId(userTypeId)
+                .groupId(groupId)
+                .build();
+    }
+
     public static GroupMember generateMockGroupMember(List<ActiveUser> activeUsers, List<UserType> userTypes, List<Group> groupList) {
         List<Long> activeUsersIds = activeUsers.stream().map(ActiveUser::getId).collect(Collectors.toList());
         List<Long> userTypesIds = userTypes.stream().map(UserType::getId).collect(Collectors.toList());
         List<Long> groupListIds = groupList.stream().map(Group::getId).collect(Collectors.toList());
 
-        return GroupMember.builder()
-                .id(new Random().nextLong())
-                .userId(getRandomId(activeUsersIds))
-                .userTypeId(getRandomId(userTypesIds))
-                .groupId(getRandomId(groupListIds))
-                .build();
+        return generateMockGroupMember(
+                getRandomId(activeUsersIds),
+                getRandomId(userTypesIds),
+                getRandomId(groupListIds)
+        );
     }
 
     public static List<GroupMember> generateMockListOfGroupMembers(int sampleSize, List<ActiveUser> activeUsers, List<UserType> userTypes, List<Group> groupList) {
@@ -50,6 +59,13 @@ public class GroupMockGenerator {
     public static GroupCreateRequest generateMockGroupCreateRequest() {
         return GroupCreateRequest.builder()
                 .groupName(UUID.randomUUID().toString())
+                .build();
+    }
+
+    public static GroupInviteRequest generateMockGroupInviteRequest(UUID groupUid, UUID userUid) {
+        return GroupInviteRequest.builder()
+                .groupUid(groupUid)
+                .userUid(userUid)
                 .build();
     }
 

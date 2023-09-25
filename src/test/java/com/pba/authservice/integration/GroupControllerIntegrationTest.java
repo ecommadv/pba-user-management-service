@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.pba.authservice.controller.advice.ApiExceptionResponse;
 import com.pba.authservice.controller.request.GroupCreateRequest;
+import com.pba.authservice.controller.request.GroupInviteRequest;
 import com.pba.authservice.controller.request.LoginRequest;
 import com.pba.authservice.exceptions.ErrorCodes;
 import com.pba.authservice.mockgenerators.ActiveUserMockGenerator;
@@ -89,12 +90,11 @@ public class GroupControllerIntegrationTest extends BaseControllerIntegrationTes
         assertEquals(groupAdmin.getUid(), groupDto.getGroupAdmin().getUid());
         assertEquals(groupAdmin.getUsername(), groupDto.getGroupAdmin().getUsername());
 
-        Optional<GroupMember> savedGroupMember = groupMemberDao.getByUserId(savedGroupAdmin.getId());
-        assertTrue(savedGroupMember.isPresent());
-        assertEquals(savedGroup.get().getId(), savedGroupMember.get().getGroupId());
-        Optional<UserType> adminUserType = userTypeDao.getByName("admin");
+        GroupMember savedGroupMember = groupMemberDao.getAll().get(0);
+        assertEquals(savedGroup.get().getId(), savedGroupMember.getGroupId());
+        Optional<UserType> adminUserType = userTypeDao.getByName(UserTypeName.ADMIN);
         assertTrue(adminUserType.isPresent());
-        assertEquals(adminUserType.get().getId(), savedGroupMember.get().getUserTypeId());
+        assertEquals(adminUserType.get().getId(), savedGroupMember.getUserTypeId());
     }
 
     @Test
@@ -156,6 +156,110 @@ public class GroupControllerIntegrationTest extends BaseControllerIntegrationTes
                 String.format("Group with name %s already exists", groupCreateRequest.getGroupName())
         );
         assertEquals(expectedErrorMap, apiExceptionResponse.errors());
+    }
+
+    @Test
+    public void testInviteUserToGroup() throws Exception {
+        // given
+        ActiveUser userToInvite = ActiveUserMockGenerator.generateMockActiveUser();
+        Group group = GroupMockGenerator.generateMockGroup();
+        ActiveUser savedUserToInvite = userDao.save(userToInvite);
+        Group savedGroup = groupDao.save(group);
+        ActiveUser groupAdmin = ActiveUserMockGenerator.generateMockActiveUser();
+        ActiveUser savedGroupAdmin = userDao.save(groupAdmin);
+        UserType adminType = userTypeDao.getByName(UserTypeName.ADMIN).get();
+        GroupMember adminMember = GroupMockGenerator.generateMockGroupMember(savedGroupAdmin.getId(), adminType.getId(), savedGroup.getId());
+        groupMemberDao.save(adminMember);
+
+        String token = this.loginUserAndGetValidToken(groupAdmin);
+        String authHeader = String.format("Bearer %s", token);
+        String inviteEndpoint = "/api/group/invite";
+        GroupInviteRequest groupInviteRequest = GroupMockGenerator.generateMockGroupInviteRequest(group.getUid(), userToInvite.getUid());
+        String groupInviteRequestJSON = objectMapper.writeValueAsString(groupInviteRequest);
+
+        // when
+        mockMvc.perform(MockMvcRequestBuilders.post(inviteEndpoint)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(groupInviteRequestJSON)
+                        .header("Authorization", authHeader))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        // then
+        assertEquals(2, groupMemberDao.getAll().size());
+        Optional<GroupMember> groupMember = groupMemberDao.getByUserIdAndGroupId(savedUserToInvite.getId(), savedGroup.getId());
+        assertTrue(groupMember.isPresent());
+        UserType regularUserType = userTypeDao.getByName(UserTypeName.REGULAR_USER).get();
+        assertEquals(regularUserType.getId(), groupMember.get().getUserTypeId());
+    }
+
+    @Test
+    public void testInviteUserToGroup_whenUserAlreadyIsInGroup() throws Exception {
+        // given
+        ActiveUser userToInvite = ActiveUserMockGenerator.generateMockActiveUser();
+        Group group = GroupMockGenerator.generateMockGroup();
+        ActiveUser savedUserToInvite = userDao.save(userToInvite);
+        Group savedGroup = groupDao.save(group);
+        ActiveUser groupAdmin = ActiveUserMockGenerator.generateMockActiveUser();
+        ActiveUser savedGroupAdmin = userDao.save(groupAdmin);
+        UserType adminType = userTypeDao.getByName(UserTypeName.ADMIN).get();
+        GroupMember adminMember = GroupMockGenerator.generateMockGroupMember(savedGroupAdmin.getId(), adminType.getId(), savedGroup.getId());
+        groupMemberDao.save(adminMember);
+        UserType regularUserType = userTypeDao.getByName(UserTypeName.REGULAR_USER).get();
+        GroupMember userToInviteMember = GroupMockGenerator.generateMockGroupMember(savedUserToInvite.getId(), regularUserType.getId(), savedGroup.getId());
+        groupMemberDao.save(userToInviteMember);
+
+        String token = this.loginUserAndGetValidToken(groupAdmin);
+        String authHeader = String.format("Bearer %s", token);
+        String inviteEndpoint = "/api/group/invite";
+        GroupInviteRequest groupInviteRequest = GroupMockGenerator.generateMockGroupInviteRequest(group.getUid(), userToInvite.getUid());
+        String groupInviteRequestJSON = objectMapper.writeValueAsString(groupInviteRequest);
+
+        // when
+        MvcResult result = mockMvc.perform(MockMvcRequestBuilders.post(inviteEndpoint)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(groupInviteRequestJSON)
+                        .header("Authorization", authHeader))
+                .andExpect(status().isBadRequest())
+                .andReturn();
+        String apiExceptionResponseJSON = result.getResponse().getContentAsString();
+        ApiExceptionResponse apiExceptionResponse = objectMapper.readValue(apiExceptionResponseJSON, ApiExceptionResponse.class);
+
+        // then
+        Map<String, String> expectedErrors = Map.of(
+                ErrorCodes.GROUP_MEMBER_ALREADY_EXISTS,
+                String.format("User with uid %s already is in group with uid %s", userToInvite.getUid(), group.getUid())
+        );
+        assertEquals(expectedErrors, apiExceptionResponse.errors());
+    }
+
+    @Test
+    public void testInviteUserToGroup_whenClientIsNotAdminType() throws Exception {
+        // given
+        ActiveUser userToInvite = ActiveUserMockGenerator.generateMockActiveUser();
+        Group group = GroupMockGenerator.generateMockGroup();
+        userDao.save(userToInvite);
+        Group savedGroup = groupDao.save(group);
+        ActiveUser client = ActiveUserMockGenerator.generateMockActiveUser();
+        ActiveUser savedClient = userDao.save(client);
+        UserType regularUserType = userTypeDao.getByName(UserTypeName.REGULAR_USER).get();
+        GroupMember clientGroupMember = GroupMockGenerator.generateMockGroupMember(savedClient.getId(), regularUserType.getId(), savedGroup.getId());
+        groupMemberDao.save(clientGroupMember);
+
+        String token = this.loginUserAndGetValidToken(client);
+        String authHeader = String.format("Bearer %s", token);
+        String inviteEndpoint = "/api/group/invite";
+        GroupInviteRequest groupInviteRequest = GroupMockGenerator.generateMockGroupInviteRequest(group.getUid(), userToInvite.getUid());
+        String groupInviteRequestJSON = objectMapper.writeValueAsString(groupInviteRequest);
+
+        // when
+        mockMvc.perform(MockMvcRequestBuilders.post(inviteEndpoint)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(groupInviteRequestJSON)
+                        .header("Authorization", authHeader))
+                // then
+                .andExpect(status().isUnauthorized())
+                .andReturn();
     }
 
     private void addGroupWithName(String name) {

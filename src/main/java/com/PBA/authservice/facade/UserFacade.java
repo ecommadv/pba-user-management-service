@@ -9,8 +9,8 @@ import java.util.UUID;
 
 public interface UserFacade {
     public void registerUser(UserCreateRequest userCreateRequest);
-    public UserDto getUser(String authHeader);
+    public UserDto getUser();
     public UserDto verifyUser(UUID validationCode);
-    public UserDto updateUser(String authHeader, UserUpdateRequest userUpdateRequest);
+    public UserDto updateUser(UserUpdateRequest userUpdateRequest);
     public String loginUser(LoginRequest loginRequest);
 }

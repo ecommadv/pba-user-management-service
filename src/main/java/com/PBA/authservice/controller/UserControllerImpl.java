@@ -26,8 +26,8 @@ public class UserControllerImpl implements UserController {
     }
 
     @Override
-    public ResponseEntity<UserDto> getActiveUser(String authHeader) {
-        UserDto userDto = userFacade.getUser(authHeader);
+    public ResponseEntity<UserDto> getActiveUser() {
+        UserDto userDto = userFacade.getUser();
         return new ResponseEntity<>(userDto, HttpStatus.OK);
     }
 
@@ -38,8 +38,8 @@ public class UserControllerImpl implements UserController {
     }
 
     @Override
-    public ResponseEntity<UserDto> updateUser(String authHeader, UserUpdateRequest userUpdateRequest) {
-        UserDto userDto = userFacade.updateUser(authHeader, userUpdateRequest);
+    public ResponseEntity<UserDto> updateUser(UserUpdateRequest userUpdateRequest) {
+        UserDto userDto = userFacade.updateUser(userUpdateRequest);
         return new ResponseEntity<>(userDto, HttpStatus.OK);
     }
 

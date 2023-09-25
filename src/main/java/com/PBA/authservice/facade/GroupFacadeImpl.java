@@ -1,7 +1,10 @@
 package com.pba.authservice.facade;
 
 import com.pba.authservice.controller.request.GroupCreateRequest;
+import com.pba.authservice.controller.request.GroupInviteRequest;
+import com.pba.authservice.exceptions.AuthorizationException;
 import com.pba.authservice.exceptions.EntityAlreadyExistsException;
+import com.pba.authservice.exceptions.EntityNotFoundException;
 import com.pba.authservice.exceptions.ErrorCodes;
 import com.pba.authservice.mapper.ActiveUserMapper;
 import com.pba.authservice.mapper.GroupMapper;
@@ -43,12 +46,29 @@ public class GroupFacadeImpl implements GroupFacade {
         Group groupToCreate = groupMapper.toGroup(groupCreateRequest);
         Group createdGroup = groupService.addGroup(groupToCreate);
 
-        UserType adminType = userService.getUserTypeByName("admin");
+        UserType adminType = userService.getUserTypeByName(UserTypeName.ADMIN);
         GroupMember groupAdmin = groupMapper.toGroupMember(groupCreator, adminType, createdGroup);
         groupService.addGroupMember(groupAdmin);
 
         UserDto adminDto = this.getUserDto(groupCreator);
         return groupMapper.toDto(createdGroup, adminDto);
+    }
+
+    @Override
+    public void inviteUserToGroup(GroupInviteRequest groupInviteRequest) {
+        UUID userToInviteUid = groupInviteRequest.getUserUid();
+        ActiveUser userToInvite = userService.getUserByUid(userToInviteUid);
+        UUID groupUid = groupInviteRequest.getGroupUid();
+        Group group = groupService.getGroupByUid(groupUid);
+        UUID adminUid = jwtSecurityService.getCurrentUserUid();
+        ActiveUser admin = userService.getUserByUid(adminUid);
+
+        this.validateUserIsAdmin(group, admin);
+        this.validateUserIsNotAlreadyInGroup(group, userToInvite);
+
+        UserType regularUserType = userService.getUserTypeByName(UserTypeName.REGULAR_USER);
+        GroupMember memberToAdd = groupMapper.toGroupMember(userToInvite, regularUserType, group);
+        groupService.addGroupMember(memberToAdd);
     }
 
     private UserDto getUserDto(ActiveUser activeUser) {
@@ -62,6 +82,24 @@ public class GroupFacadeImpl implements GroupFacade {
             throw new EntityAlreadyExistsException(
                     ErrorCodes.GROUP_ALREADY_EXISTS,
                     String.format("Group with name %s already exists", groupCreateRequest.getGroupName())
+            );
+        }
+    }
+
+    private void validateUserIsAdmin(Group group, ActiveUser user) {
+        GroupMember groupMember = groupService.getGroupMemberByUserIdAndGroupId(user.getId(), group.getId())
+                .orElseThrow(AuthorizationException::new);
+        UserType adminType = userService.getUserTypeByName(UserTypeName.ADMIN);
+        if (groupMember.getUserTypeId() != adminType.getId()) {
+            throw new AuthorizationException();
+        }
+    }
+
+    private void validateUserIsNotAlreadyInGroup(Group group, ActiveUser user) {
+        if (groupService.getGroupMemberByUserIdAndGroupId(user.getId(), group.getId()).isPresent()) {
+            throw new EntityAlreadyExistsException(
+                    ErrorCodes.GROUP_MEMBER_ALREADY_EXISTS,
+                    String.format("User with uid %s already is in group with uid %s", user.getUid(), group.getUid())
             );
         }
     }

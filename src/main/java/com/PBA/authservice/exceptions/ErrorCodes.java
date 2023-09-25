@@ -9,4 +9,6 @@ public class ErrorCodes {
     public static final String USER_ALREADY_EXISTS = "user.already.exists";
     public static final String USER_TYPE_NOT_FOUND = "user.type.not.found";
     public static final String GROUP_ALREADY_EXISTS = "group.already.exists";
+    public static final String GROUP_NOT_FOUND = "group.not.found";
+    public static final String GROUP_MEMBER_ALREADY_EXISTS = "group.member.already.exists";
 }

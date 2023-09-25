@@ -22,8 +22,8 @@ public class GroupMemberDaoImpl extends JdbcRepository<GroupMember, Long> implem
     }
 
     @Override
-    public Optional<GroupMember> getByUserId(Long userId) {
-        String sql = sqlProvider.selectByUserId();
-        return jdbcTemplate.query(sql, rowMapper, userId).stream().findFirst();
+    public Optional<GroupMember> getByUserIdAndGroupId(Long userId, Long groupId) {
+        String sql = sqlProvider.selectByUserIdAndGroupId();
+        return jdbcTemplate.query(sql, rowMapper, userId, groupId).stream().findFirst();
     }
 }
