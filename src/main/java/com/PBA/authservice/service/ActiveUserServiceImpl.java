@@ -71,6 +71,6 @@ public class ActiveUserServiceImpl implements ActiveUserService {
     @Override
     public ActiveUser findByUsernameAndPassword(String username, String password) {
         return activeUserDao.findByUsernameAndPassword(username, password)
-                .orElseThrow(() -> new EntityNotFoundException(ErrorCodes.USER_NOT_FOUND, String.format("User with username %s and password %s does not exist", username, password)));
+                .orElseThrow(() -> new EntityNotFoundException(ErrorCodes.USER_NOT_FOUND, "Invalid username/password combination"));
     }
 }

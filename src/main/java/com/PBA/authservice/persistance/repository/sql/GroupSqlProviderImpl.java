@@ -58,4 +58,14 @@ public class GroupSqlProviderImpl implements GroupSqlProvider {
                     name = ?
                 """;
     }
+
+    @Override
+    public String selectByUid() {
+        return """
+                SELECT id, name, uid
+                FROM group_type
+                WHERE
+                    uid = ?
+                """;
+    }
 }

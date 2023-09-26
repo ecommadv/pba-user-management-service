@@ -7,6 +7,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
+import java.util.UUID;
 
 @Repository
 public class GroupDaoImpl extends JdbcRepository<Group, Long> implements GroupDao {
@@ -25,5 +26,11 @@ public class GroupDaoImpl extends JdbcRepository<Group, Long> implements GroupDa
     public Optional<Group> getByName(String name) {
         String sql = sqlProvider.selectByName();
         return jdbcTemplate.query(sql, rowMapper, name).stream().findFirst();
+    }
+
+    @Override
+    public Optional<Group> getByUid(UUID uid) {
+        String sql = sqlProvider.selectByUid();
+        return jdbcTemplate.query(sql, rowMapper, uid).stream().findFirst();
     }
 }

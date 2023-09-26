@@ -1,6 +1,5 @@
 package com.pba.authservice.controller.request;
 
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -13,7 +12,10 @@ import java.util.UUID;
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-public class GroupCreateRequest {
-    @NotBlank(message = "{groupName.notblank}")
-    private String groupName;
+public class GroupInviteRequest {
+    @NotNull(message = "{userUid.notnull}")
+    private UUID userUid;
+
+    @NotNull(message = "{groupUid.notnull}")
+    private UUID groupUid;
 }

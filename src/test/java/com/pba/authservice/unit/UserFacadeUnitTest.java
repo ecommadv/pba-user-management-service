@@ -12,6 +12,7 @@ import com.pba.authservice.controller.request.UserCreateRequest;
 import com.pba.authservice.persistance.model.PendingUserProfile;
 import com.pba.authservice.persistance.model.dtos.UserDto;
 import com.pba.authservice.persistance.model.dtos.UserProfileDto;
+import com.pba.authservice.security.JwtSecurityService;
 import com.pba.authservice.service.ActiveUserService;
 import com.pba.authservice.service.EmailService;
 import com.pba.authservice.service.PendingUserService;
@@ -51,6 +52,9 @@ public class UserFacadeUnitTest {
     @Mock
     private UserRequestValidator userRequestValidator;
 
+    @Mock
+    private JwtSecurityService jwtSecurityService;
+
     @Test
     public void testRegisterUser() {
         // given
@@ -79,17 +83,18 @@ public class UserFacadeUnitTest {
     public void testGetActiveUser() {
         // given
         ActiveUser activeUser = ActiveUserMockGenerator.generateMockActiveUser();
-        UUID uid = activeUser.getUid();
         UserDto userDto = ActiveUserMockGenerator.generateMockActiveUserDto();
         UserProfileDto userProfileDto = ActiveUserMockGenerator.generateMockUserProfileDto();
         ActiveUserProfile activeUserProfile = ActiveUserMockGenerator.generateMockActiveUserProfile();
+        UUID uid = UUID.randomUUID();
+        when(jwtSecurityService.getCurrentUserUid()).thenReturn(uid);
         when(activeUserService.getUserByUid(uid)).thenReturn(activeUser);
         when(activeUserService.getProfileByUserId(activeUser.getId())).thenReturn(activeUserProfile);
         when(activeUserMapper.toUserProfileDto(activeUserProfile)).thenReturn(userProfileDto);
         when(activeUserMapper.toUserDto(activeUser, userProfileDto)).thenReturn(userDto);
 
         // when
-        UserDto result = userFacade.getUser(uid);
+        UserDto result = userFacade.getUser();
 
         // then
         assertEquals(userDto, result);

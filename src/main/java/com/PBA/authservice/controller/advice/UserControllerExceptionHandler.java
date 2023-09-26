@@ -1,6 +1,7 @@
 package com.pba.authservice.controller.advice;
 
 import com.pba.authservice.exceptions.AuthException;
+import com.pba.authservice.exceptions.AuthorizationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -25,6 +26,11 @@ public class UserControllerExceptionHandler {
     public ApiExceptionResponse handleValidationExceptions(MethodArgumentNotValidException exception) {
         Map<String, String> errorMap = this.getErrorMap(exception);
         return new ApiExceptionResponse(ZonedDateTime.now(), errorMap);
+    }
+
+    @ExceptionHandler(AuthorizationException.class)
+    public ResponseEntity<Void> handleAuthorizationException(AuthorizationException exception) {
+        return new ResponseEntity<>(exception.getHttpStatus());
     }
 
     private Map<String, String> getErrorMap(MethodArgumentNotValidException exception) {

@@ -1,6 +1,7 @@
 package com.pba.authservice.controller;
 
 import com.pba.authservice.controller.request.GroupCreateRequest;
+import com.pba.authservice.controller.request.GroupInviteRequest;
 import com.pba.authservice.facade.GroupFacade;
 import com.pba.authservice.persistance.model.dtos.GroupDto;
 import org.springframework.http.HttpStatus;
@@ -19,5 +20,11 @@ public class GroupControllerImpl implements GroupController {
     public ResponseEntity<GroupDto> createGroup(GroupCreateRequest groupCreateRequest) {
         GroupDto groupDto = groupFacade.createGroup(groupCreateRequest);
         return new ResponseEntity<>(groupDto, HttpStatus.CREATED);
+    }
+
+    @Override
+    public ResponseEntity<Void> inviteUserToGroup(GroupInviteRequest groupInviteRequest) {
+        groupFacade.inviteUserToGroup(groupInviteRequest);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 }

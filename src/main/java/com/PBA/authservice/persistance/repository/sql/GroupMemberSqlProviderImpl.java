@@ -51,12 +51,12 @@ public class GroupMemberSqlProviderImpl implements GroupMemberSqlProvider {
     }
 
     @Override
-    public String selectByUserId() {
+    public String selectByUserIdAndGroupId() {
         return """
                 SELECT id, user_id, user_type_id, group_id
                 FROM group_member
                 WHERE
-                    user_id = ?
+                    user_id = ? AND group_id = ?
                 """;
     }
 }

@@ -11,5 +11,5 @@ public interface GroupMemberDao {
     public List<GroupMember> getAll();
     public GroupMember deleteById(Long id);
     public GroupMember update(GroupMember groupMember, Long id);
-    public Optional<GroupMember> getByUserId(Long userId);
+    public Optional<GroupMember> getByUserIdAndGroupId(Long userId, Long groupId);
 }
