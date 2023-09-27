@@ -4,6 +4,7 @@ import com.pba.authservice.controller.request.GroupCreateRequest;
 import com.pba.authservice.controller.request.GroupInviteRequest;
 import com.pba.authservice.controller.request.GroupLoginRequest;
 import com.pba.authservice.persistance.model.dtos.GroupDto;
+import com.pba.authservice.persistance.model.dtos.GroupLoginDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -40,4 +41,11 @@ public interface GroupController {
     })
     @PostMapping("/login")
     public ResponseEntity<String> loginToGroup(@Valid @RequestBody GroupLoginRequest groupLoginRequest);
+
+    @Operation(summary = "Provides data related to the logged in group user.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "OK"),
+    })
+    @GetMapping("/login-info")
+    public ResponseEntity<GroupLoginDto> getGroupLoginInfo();
 }

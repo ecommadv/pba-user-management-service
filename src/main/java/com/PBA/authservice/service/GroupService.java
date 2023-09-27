@@ -2,7 +2,9 @@ package com.pba.authservice.service;
 
 import com.pba.authservice.persistance.model.Group;
 import com.pba.authservice.persistance.model.GroupMember;
+import com.pba.authservice.persistance.model.UserType;
 
+import java.util.Collection;
 import java.util.Optional;
 import java.util.UUID;
 

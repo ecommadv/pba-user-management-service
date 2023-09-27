@@ -38,24 +38,34 @@ public class JwtUtilsImpl implements JwtUtils {
     }
 
     @Override
-    public boolean isTokenValid(String token, ActiveUser activeUser) {
-        return activeUser.getUid().equals(this.extractUserUid(token)) && !this.isTokenExpired(token);
+    public boolean isTokenValid(String token) {
+        return !this.isTokenExpired(token);
     }
 
     @Override
-    public UUID extractUserUid(String token) {
-        return UUID.fromString(this.extractClaim(token, Claims::getSubject));
+    public UUID extractUserUidFromUserToken(String token) {
+        return this.extractClaim(token, claims -> UUID.fromString(claims.getSubject()));
     }
 
     @Override
     public String extractUserType(String token) {
-        return this.extractClaim(token, claims -> claims.get("user_type")).toString();
+        return this.extractClaim(token, claims -> claims.get("user_type").toString());
+    }
+
+    @Override
+    public UUID extractGroupUid(String token) {
+        return this.extractClaim(token, claims -> UUID.fromString(claims.getSubject()));
     }
 
     @Override
     public UUID extractUserUidFromHeader(String authHeader) {
         String token = this.extractTokenFromHeader(authHeader);
-        return this.extractUserUid(token);
+        return this.extractUserUidFromUserToken(token);
+    }
+
+    @Override
+    public UUID extractUserUidFromGroupToken(String token) {
+        return this.extractClaim(token, claims -> UUID.fromString(claims.get("user_uid").toString()));
     }
 
     @Override
@@ -75,8 +85,13 @@ public class JwtUtilsImpl implements JwtUtils {
     }
 
     private <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
-        final Claims claims = this.extractAllClaims(token);
-        return claimsResolver.apply(claims);
+        try {
+            final Claims claims = this.extractAllClaims(token);
+            return claimsResolver.apply(claims);
+        }
+        catch(Exception e) {
+            throw new AuthorizationException();
+        }
     }
 
     private Claims extractAllClaims(String token) {

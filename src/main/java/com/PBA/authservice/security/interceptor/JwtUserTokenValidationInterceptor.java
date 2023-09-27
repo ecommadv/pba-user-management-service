@@ -12,11 +12,11 @@ import org.springframework.web.servlet.HandlerInterceptor;
 import java.util.UUID;
 
 @Component
-public class JwtValidationInterceptor implements HandlerInterceptor {
+public class JwtUserTokenValidationInterceptor implements HandlerInterceptor {
     private final JwtUtils jwtUtils;
     private final ActiveUserService userService;
 
-    public JwtValidationInterceptor(JwtUtils jwtUtils, ActiveUserService userService) {
+    public JwtUserTokenValidationInterceptor(JwtUtils jwtUtils, ActiveUserService userService) {
         this.jwtUtils = jwtUtils;
         this.userService = userService;
     }
@@ -25,9 +25,9 @@ public class JwtValidationInterceptor implements HandlerInterceptor {
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
         String header = request.getHeader("Authorization");
         String token = jwtUtils.extractTokenFromHeader(header);
-        UUID userUid = jwtUtils.extractUserUid(token);
+        UUID userUid = jwtUtils.extractUserUidFromUserToken(token);
         ActiveUser activeUser = userService.getUserByUid(userUid);
-        if (!jwtUtils.isTokenValid(token, activeUser)) {
+        if (!jwtUtils.isTokenValid(token)) {
             throw new AuthorizationException();
         }
         return true;

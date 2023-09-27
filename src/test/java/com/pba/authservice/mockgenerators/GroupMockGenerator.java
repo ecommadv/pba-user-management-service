@@ -2,6 +2,7 @@ package com.pba.authservice.mockgenerators;
 
 import com.pba.authservice.controller.request.GroupCreateRequest;
 import com.pba.authservice.controller.request.GroupInviteRequest;
+import com.pba.authservice.controller.request.GroupLoginRequest;
 import com.pba.authservice.persistance.model.ActiveUser;
 import com.pba.authservice.persistance.model.Group;
 import com.pba.authservice.persistance.model.GroupMember;
@@ -66,6 +67,12 @@ public class GroupMockGenerator {
         return GroupInviteRequest.builder()
                 .groupUid(groupUid)
                 .userUid(userUid)
+                .build();
+    }
+
+    public static GroupLoginRequest generateMockGroupLoginRequest(UUID groupUid) {
+        return GroupLoginRequest.builder()
+                .groupUid(groupUid)
                 .build();
     }
 

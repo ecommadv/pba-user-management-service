@@ -5,6 +5,7 @@ import com.pba.authservice.controller.request.GroupInviteRequest;
 import com.pba.authservice.controller.request.GroupLoginRequest;
 import com.pba.authservice.facade.GroupFacade;
 import com.pba.authservice.persistance.model.dtos.GroupDto;
+import com.pba.authservice.persistance.model.dtos.GroupLoginDto;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
@@ -33,5 +34,11 @@ public class GroupControllerImpl implements GroupController {
     public ResponseEntity<String> loginToGroup(GroupLoginRequest groupLoginRequest) {
         String token = groupFacade.loginToGroup(groupLoginRequest);
         return new ResponseEntity<>(token, HttpStatus.OK);
+    }
+
+    @Override
+    public ResponseEntity<GroupLoginDto> getGroupLoginInfo() {
+        GroupLoginDto groupLoginDto = groupFacade.getGroupLoginInfo();
+        return new ResponseEntity<>(groupLoginDto, HttpStatus.OK);
     }
 }
