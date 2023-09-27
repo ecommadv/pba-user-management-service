@@ -2,6 +2,7 @@ package com.pba.authservice.controller;
 
 import com.pba.authservice.controller.request.GroupCreateRequest;
 import com.pba.authservice.controller.request.GroupInviteRequest;
+import com.pba.authservice.controller.request.GroupLoginRequest;
 import com.pba.authservice.persistance.model.dtos.GroupDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -30,4 +31,13 @@ public interface GroupController {
     })
     @PostMapping("/invite")
     public ResponseEntity<Void> inviteUserToGroup(@Valid @RequestBody GroupInviteRequest groupInviteRequest);
+
+    @Operation(summary = "Allows users to log in to a group that they are part of.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "OK"),
+            @ApiResponse(responseCode = "400", description = "Bad Request"),
+            @ApiResponse(responseCode = "404", description = "Not Found")
+    })
+    @PostMapping("/login")
+    public ResponseEntity<String> loginToGroup(@Valid @RequestBody GroupLoginRequest groupLoginRequest);
 }
