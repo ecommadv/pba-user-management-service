@@ -6,9 +6,12 @@ import com.pba.authservice.persistance.model.Group;
 import com.pba.authservice.persistance.model.GroupMember;
 import com.pba.authservice.persistance.model.UserType;
 import com.pba.authservice.persistance.model.dtos.GroupDto;
+import com.pba.authservice.persistance.model.dtos.GroupLoginDto;
 import com.pba.authservice.persistance.model.dtos.UserDto;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+
+import java.util.UUID;
 
 @Mapper
 public interface GroupMapper {
@@ -26,4 +29,6 @@ public interface GroupMapper {
     @Mapping(target = "userTypeId", expression = "java(userType.getId())")
     @Mapping(target = "groupId", expression = "java(group.getId())")
     public GroupMember toGroupMember(ActiveUser user, UserType userType, Group group);
+
+    public GroupLoginDto toGroupLoginDto(UUID userUid, String userTypeName, UUID groupUid);
 }
