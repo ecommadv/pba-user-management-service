@@ -1,5 +1,6 @@
 package com.pba.authservice.security;
 
+import com.pba.authservice.persistance.model.UserType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -17,4 +18,6 @@ import java.util.UUID;
 @RequestScope
 public class SecurityContextHolder {
     private UUID currentUserUid;
+    private UserType currentUserType;
+    private UUID currentGroupUid;
 }

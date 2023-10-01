@@ -11,6 +11,7 @@ import com.pba.authservice.mapper.ActiveUserMapper;
 import com.pba.authservice.mapper.GroupMapper;
 import com.pba.authservice.persistance.model.*;
 import com.pba.authservice.persistance.model.dtos.GroupDto;
+import com.pba.authservice.persistance.model.dtos.GroupLoginDto;
 import com.pba.authservice.persistance.model.dtos.UserDto;
 import com.pba.authservice.persistance.model.dtos.UserProfileDto;
 import com.pba.authservice.security.JwtSecurityService;
@@ -82,6 +83,14 @@ public class GroupFacadeImpl implements GroupFacade {
         GroupMember groupMember = this.validateUserIsInGroup(user, group);
         UserType userType = userService.getUserTypeById(groupMember.getUserTypeId()).get();
         return jwtSecurityService.generateAccessToken(user, group, userType);
+    }
+
+    @Override
+    public GroupLoginDto getGroupLoginInfo() {
+        UserType userType = jwtSecurityService.getCurrentUserType();
+        UUID userUid = jwtSecurityService.getCurrentUserUid();
+        UUID groupUid = jwtSecurityService.getCurrentGroupUid();
+        return groupMapper.toGroupLoginDto(userUid, userType.getName(), groupUid);
     }
 
     private GroupMember validateUserIsInGroup(ActiveUser user, Group group) {

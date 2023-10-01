@@ -7,10 +7,7 @@ import com.pba.authservice.persistance.model.UserType;
 import com.pba.authservice.persistance.model.dtos.UserDto;
 import com.pba.authservice.persistance.model.dtos.UserProfileDto;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Random;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -105,6 +102,14 @@ public class ActiveUserMockGenerator {
                 .build();
     }
 
+    public static UserType generateMockUserType(List<UserType> userTypes) {
+        UserType userType = getRandomUserType(userTypes);
+        return UserType.builder()
+                .id(userType.getId())
+                .name(userType.getName())
+                .build();
+    }
+
     public static List<UserType> generateMockListOfUserTypes(int sampleSize) {
         return Stream.generate(ActiveUserMockGenerator::generateMockUserType)
                 .limit(sampleSize)
@@ -150,5 +155,14 @@ public class ActiveUserMockGenerator {
                 .mapToObj(chars::charAt)
                 .map(Object::toString)
                 .collect(Collectors.joining());
+    }
+
+    private static UserType getRandomUserType(List<UserType> userTypes) {
+        if (userTypes.isEmpty()) {
+            return generateMockUserType();
+        }
+        List<UserType> userTypeList = new ArrayList<>(userTypes);
+        Collections.shuffle(userTypeList);
+        return userTypeList.get(0);
     }
 }

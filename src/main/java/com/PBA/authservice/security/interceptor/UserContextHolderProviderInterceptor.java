@@ -10,11 +10,11 @@ import org.springframework.web.servlet.HandlerInterceptor;
 import java.util.UUID;
 
 @Component
-public class SecurityContextHolderProviderInterceptor implements HandlerInterceptor {
+public class UserContextHolderProviderInterceptor implements HandlerInterceptor {
     private final JwtSecurityService jwtSecurityService;
     private final JwtUtils jwtUtils;
 
-    public SecurityContextHolderProviderInterceptor(JwtSecurityService jwtSecurityService, JwtUtils jwtUtils) {
+    public UserContextHolderProviderInterceptor(JwtSecurityService jwtSecurityService, JwtUtils jwtUtils) {
         this.jwtSecurityService = jwtSecurityService;
         this.jwtUtils = jwtUtils;
     }

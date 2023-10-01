@@ -4,6 +4,7 @@ import com.pba.authservice.persistance.model.ActiveUser;
 import com.pba.authservice.persistance.model.ActiveUserProfile;
 import com.pba.authservice.persistance.model.UserType;
 
+import java.util.Optional;
 import java.util.UUID;
 
 public interface ActiveUserService {
@@ -16,4 +17,5 @@ public interface ActiveUserService {
     public UserType getUserTypeByName(String name);
     public void updateUser(ActiveUser updatedUser, ActiveUserProfile updatedProfile);
     public ActiveUser findByUsernameAndPassword(String username, String password);
+    public Optional<UserType> getUserTypeById(Long id);
 }

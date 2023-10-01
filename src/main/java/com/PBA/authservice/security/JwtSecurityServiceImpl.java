@@ -33,6 +33,26 @@ public class JwtSecurityServiceImpl implements JwtSecurityService {
     }
 
     @Override
+    public void setCurrentUserType(UserType userType) {
+        contextHolder.setCurrentUserType(userType);
+    }
+
+    @Override
+    public UserType getCurrentUserType() {
+        return contextHolder.getCurrentUserType();
+    }
+
+    @Override
+    public void setCurrentGroupUid(UUID groupUid) {
+        contextHolder.setCurrentGroupUid(groupUid);
+    }
+
+    @Override
+    public UUID getCurrentGroupUid() {
+        return contextHolder.getCurrentGroupUid();
+    }
+
+    @Override
     public UUID getCurrentUserUid() {
         return contextHolder.getCurrentUserUid();
     }

@@ -11,6 +11,7 @@ import com.pba.authservice.persistance.repository.UserTypeDao;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -72,5 +73,10 @@ public class ActiveUserServiceImpl implements ActiveUserService {
     public ActiveUser findByUsernameAndPassword(String username, String password) {
         return activeUserDao.findByUsernameAndPassword(username, password)
                 .orElseThrow(() -> new EntityNotFoundException(ErrorCodes.USER_NOT_FOUND, "Invalid username/password combination"));
+    }
+
+    @Override
+    public Optional<UserType> getUserTypeById(Long id) {
+        return userTypeDao.getById(id);
     }
 }

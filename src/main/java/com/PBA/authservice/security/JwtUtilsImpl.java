@@ -11,8 +11,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.UUID;
 import java.util.function.Function;
 
@@ -25,8 +23,9 @@ public class JwtUtilsImpl implements JwtUtils {
 
     @Override
     public String generateAccessToken(ActiveUser user) {
-        Map<String, Object> claims = new HashMap<>();
-        return doGenerateToken(claims, user.getUid().toString());
+        Claims claims = Jwts.claims().setSubject(user.getUid().toString());
+        claims.put("token_type", "user");
+        return this.doGenerateToken(claims);
     }
 
     @Override
@@ -34,28 +33,39 @@ public class JwtUtilsImpl implements JwtUtils {
         Claims claims = Jwts.claims().setSubject(group.getUid().toString());
         claims.put("user_uid", user.getUid());
         claims.put("user_type", userType.getName());
+        claims.put("token_type", "group");
         return this.doGenerateToken(claims);
     }
 
     @Override
-    public boolean isTokenValid(String token, ActiveUser activeUser) {
-        return activeUser.getUid().equals(this.extractUserUid(token)) && !this.isTokenExpired(token);
+    public boolean isTokenValid(String token) {
+        return !this.isTokenExpired(token);
     }
 
     @Override
-    public UUID extractUserUid(String token) {
-        return UUID.fromString(this.extractClaim(token, Claims::getSubject));
+    public UUID extractUserUidFromUserToken(String token) {
+        return this.extractClaim(token, claims -> UUID.fromString(claims.getSubject()));
     }
 
     @Override
     public String extractUserType(String token) {
-        return this.extractClaim(token, claims -> claims.get("user_type")).toString();
+        return this.extractClaim(token, claims -> claims.get("user_type").toString());
+    }
+
+    @Override
+    public UUID extractGroupUid(String token) {
+        return this.extractClaim(token, claims -> UUID.fromString(claims.getSubject()));
     }
 
     @Override
     public UUID extractUserUidFromHeader(String authHeader) {
         String token = this.extractTokenFromHeader(authHeader);
-        return this.extractUserUid(token);
+        return this.extractUserUidFromUserToken(token);
+    }
+
+    @Override
+    public UUID extractUserUidFromGroupToken(String token) {
+        return this.extractClaim(token, claims -> UUID.fromString(claims.get("user_uid").toString()));
     }
 
     @Override
@@ -75,8 +85,13 @@ public class JwtUtilsImpl implements JwtUtils {
     }
 
     private <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
-        final Claims claims = this.extractAllClaims(token);
-        return claimsResolver.apply(claims);
+        try {
+            final Claims claims = this.extractAllClaims(token);
+            return claimsResolver.apply(claims);
+        }
+        catch(Exception e) {
+            throw new AuthorizationException();
+        }
     }
 
     private Claims extractAllClaims(String token) {
@@ -90,17 +105,6 @@ public class JwtUtilsImpl implements JwtUtils {
         catch(Exception e) {
             throw new AuthorizationException();
         }
-    }
-
-    private String doGenerateToken(Map<String, Object> claims, String subject) {
-        return Jwts.builder()
-                .setClaims(claims)
-                .setSubject(subject)
-                .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + JWT_TOKEN_VALIDITY))
-                .signWith(SignatureAlgorithm.HS512, SECRET_KEY)
-                .compact();
-
     }
 
     private String doGenerateToken(Claims claims) {

@@ -11,4 +11,8 @@ public interface JwtSecurityService {
     public void setCurrentUserUid(UUID uid);
     public String generateAccessToken(ActiveUser user);
     public String generateAccessToken(ActiveUser user, Group group, UserType userType);
+    public void setCurrentUserType(UserType userType);
+    public UserType getCurrentUserType();
+    public void setCurrentGroupUid(UUID groupUid);
+    public UUID getCurrentGroupUid();
 }
