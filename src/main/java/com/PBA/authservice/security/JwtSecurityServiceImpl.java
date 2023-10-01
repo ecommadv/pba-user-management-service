@@ -1,6 +1,8 @@
 package com.pba.authservice.security;
 
 import com.pba.authservice.persistance.model.ActiveUser;
+import com.pba.authservice.persistance.model.Group;
+import com.pba.authservice.persistance.model.UserType;
 import org.springframework.stereotype.Service;
 
 import java.util.UUID;
@@ -23,6 +25,11 @@ public class JwtSecurityServiceImpl implements JwtSecurityService {
     @Override
     public String generateAccessToken(ActiveUser user) {
         return jwtUtils.generateAccessToken(user);
+    }
+
+    @Override
+    public String generateAccessToken(ActiveUser user, Group group, UserType userType) {
+        return jwtUtils.generateAccessToken(user, group, userType);
     }
 
     @Override

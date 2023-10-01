@@ -2,6 +2,7 @@ package com.pba.authservice.facade;
 
 import com.pba.authservice.controller.request.GroupCreateRequest;
 import com.pba.authservice.controller.request.GroupInviteRequest;
+import com.pba.authservice.controller.request.GroupLoginRequest;
 import com.pba.authservice.exceptions.AuthorizationException;
 import com.pba.authservice.exceptions.EntityAlreadyExistsException;
 import com.pba.authservice.exceptions.EntityNotFoundException;
@@ -18,6 +19,7 @@ import com.pba.authservice.service.GroupService;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Optional;
 import java.util.UUID;
 
 @Component
@@ -69,6 +71,22 @@ public class GroupFacadeImpl implements GroupFacade {
         UserType regularUserType = userService.getUserTypeByName(UserTypeName.REGULAR_USER);
         GroupMember memberToAdd = groupMapper.toGroupMember(userToInvite, regularUserType, group);
         groupService.addGroupMember(memberToAdd);
+    }
+
+    @Override
+    public String loginToGroup(GroupLoginRequest groupLoginRequest) {
+        UUID userUid = jwtSecurityService.getCurrentUserUid();
+        UUID groupUid = groupLoginRequest.getGroupUid();
+        Group group = groupService.getGroupByUid(groupUid);
+        ActiveUser user = userService.getUserByUid(userUid);
+        GroupMember groupMember = this.validateUserIsInGroup(user, group);
+        UserType userType = userService.getUserTypeById(groupMember.getUserTypeId()).get();
+        return jwtSecurityService.generateAccessToken(user, group, userType);
+    }
+
+    private GroupMember validateUserIsInGroup(ActiveUser user, Group group) {
+        return groupService.getGroupMemberByUserIdAndGroupId(user.getId(), group.getId())
+                .orElseThrow(AuthorizationException::new);
     }
 
     private UserDto getUserDto(ActiveUser activeUser) {
