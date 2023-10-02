@@ -1,9 +1,7 @@
 package com.pba.authservice.controller;
 
-import com.pba.authservice.controller.request.LoginRequest;
-import com.pba.authservice.controller.request.UserUpdateRequest;
+import com.pba.authservice.controller.request.*;
 import com.pba.authservice.facade.UserFacade;
-import com.pba.authservice.controller.request.UserCreateRequest;
 import com.pba.authservice.persistance.model.dtos.UserDto;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -47,5 +45,17 @@ public class UserControllerImpl implements UserController {
     public ResponseEntity<String> loginUser(LoginRequest loginRequest) {
         String token = userFacade.loginUser(loginRequest);
         return new ResponseEntity<>(token, HttpStatus.OK);
+    }
+
+    @Override
+    public ResponseEntity<Void> forgotPassword(ForgotPasswordRequest forgotPasswordRequest) {
+        userFacade.forgotPassword(forgotPasswordRequest);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @Override
+    public ResponseEntity<Void> changePassword(UUID token, ChangePasswordRequest changePasswordRequest) {
+        userFacade.changePassword(token, changePasswordRequest);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 }

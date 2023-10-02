@@ -12,13 +12,17 @@ public class InterceptorConfig implements WebMvcConfigurer {
     private static final String SWAGGER_ENDPOINT = "/swagger-ui/**";
     private static final String API_DOCS_ENDPOINT = "/v3/api-docs/**";
     private static final String GROUP_LOGIN_INFO_ENDPOINT = "/api/group/login-info";
+    private static final String FORGOT_PASSWORD_ENDPOINT = "/api/user/forgot-password";
+    private static final String CHANGE_PASSWORD_ENDPOINT = "/api/user/change-password/**";
     private static final String[] EXCLUDED_ENDPOINTS = {
             USER_LOGIN_ENDPOINT,
             USER_REGISTER_ENDPOINT,
             USER_ACTIVATE_ENDPOINT,
             SWAGGER_ENDPOINT,
             API_DOCS_ENDPOINT,
-            GROUP_LOGIN_INFO_ENDPOINT
+            GROUP_LOGIN_INFO_ENDPOINT,
+            FORGOT_PASSWORD_ENDPOINT,
+            CHANGE_PASSWORD_ENDPOINT
     };
     private final JwtUserTokenValidationInterceptor jwtUserTokenValidationInterceptor;
     private final UserContextHolderProviderInterceptor userContextHolderProviderInterceptor;

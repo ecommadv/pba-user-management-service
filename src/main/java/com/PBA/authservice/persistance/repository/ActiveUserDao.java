@@ -15,4 +15,6 @@ public interface ActiveUserDao {
     public Optional<ActiveUser> getByUid(UUID uid);
     public Optional<ActiveUser> getByUsername(String username);
     public Optional<ActiveUser> findByUsernameAndPassword(String username, String password);
+    public Optional<ActiveUser> getByEmail(String email);
+    public Optional<ActiveUser> getByPasswordToken(UUID token);
 }

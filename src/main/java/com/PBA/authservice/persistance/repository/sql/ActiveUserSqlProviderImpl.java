@@ -79,4 +79,24 @@ public class ActiveUserSqlProviderImpl implements ActiveUserSqlProvider {
                     username = ? AND password = ?
                 """;
     }
+
+    @Override
+    public String selectByEmail() {
+        return """
+               SELECT active_user.*
+               FROM active_user_profile
+                    INNER JOIN active_user ON active_user_profile.user_id = active_user.id
+               WHERE active_user_profile.email = ?
+               """;
+    }
+
+    @Override
+    public String selectByPasswordToken() {
+        return """
+               SELECT active_user.*
+               FROM password_token
+                    INNER JOIN active_user ON password_token.user_id = active_user.id
+               WHERE password_token.token = ?
+               """;
+    }
 }

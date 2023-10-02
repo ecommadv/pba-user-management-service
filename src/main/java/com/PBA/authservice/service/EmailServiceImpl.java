@@ -2,12 +2,14 @@ package com.pba.authservice.service;
 
 import com.pba.authservice.exceptions.EmailNotSentException;
 import com.pba.authservice.exceptions.ErrorCodes;
+import com.pba.authservice.persistance.model.PasswordToken;
 import jakarta.mail.internet.MimeMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.env.Environment;
+import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ResourceUtils;
@@ -40,6 +42,13 @@ public class EmailServiceImpl implements EmailService {
         this.sendEmailFromTemplate(to, subject, verificationLink);
     }
 
+    @Override
+    public void sendForgotPasswordEmail(String to, PasswordToken passwordToken) {
+        String subject = "Forgot password";
+        String text = String.format("Here is your token for resetting your password: %s", passwordToken.getToken());
+        this.sendSimpleMessage(to, subject, text);
+    }
+
     private void sendEmailFromTemplate(String to, String subject, String verificationLink) {
         MimeMessage message = mailSender.createMimeMessage();
 
@@ -63,5 +72,13 @@ public class EmailServiceImpl implements EmailService {
 
     private String readFile(File file) throws IOException {
         return new String(Files.readAllBytes(file.toPath()));
+    }
+
+    public void sendSimpleMessage(String to, String subject, String text) {
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setTo(to);
+        message.setSubject(subject);
+        message.setText(text);
+        mailSender.send(message);
     }
 }

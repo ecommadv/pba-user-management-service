@@ -11,4 +11,5 @@ public class ErrorCodes {
     public static final String GROUP_ALREADY_EXISTS = "group.already.exists";
     public static final String GROUP_NOT_FOUND = "group.not.found";
     public static final String GROUP_MEMBER_ALREADY_EXISTS = "group.member.already.exists";
+    public static final String PASSWORD_TOKEN_NOT_FOUND = "password.token.not.found";
 }

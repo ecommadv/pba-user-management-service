@@ -8,6 +8,7 @@ import com.pba.authservice.persistance.model.PendingUserProfile;
 import org.mapstruct.Context;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 @Mapper
 public interface PendingUserMapper {
@@ -15,6 +16,12 @@ public interface PendingUserMapper {
     @Mapping(target = "createdAt", expression = "java(java.time.LocalDateTime.now())")
     @Mapping(target = "validationCode", expression = "java(java.util.UUID.randomUUID())")
     public PendingUser toPendingUser(UserCreateRequest userCreateRequest);
+
+    @Mapping(target = "uid", expression = "java(java.util.UUID.randomUUID())")
+    @Mapping(target = "createdAt", expression = "java(java.time.LocalDateTime.now())")
+    @Mapping(target = "validationCode", expression = "java(java.util.UUID.randomUUID())")
+    @Mapping(target = "password", expression = "java(passwordEncoder.encode(userCreateRequest.getPassword()))")
+    public PendingUser toPendingUser(UserCreateRequest userCreateRequest, @Context PasswordEncoder passwordEncoder);
 
     @Mapping(target = "userId", expression = "java(userId)")
     public PendingUserProfile toPendingUserProfile(UserCreateRequest userCreateRequest, Long userId);
