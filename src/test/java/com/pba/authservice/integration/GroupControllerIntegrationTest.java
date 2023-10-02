@@ -20,6 +20,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
@@ -53,6 +54,9 @@ public class GroupControllerIntegrationTest extends BaseControllerIntegrationTes
     @Autowired
     private JwtUtils jwtService;
 
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
     private ObjectMapper objectMapper;
 
     @BeforeEach
@@ -66,8 +70,10 @@ public class GroupControllerIntegrationTest extends BaseControllerIntegrationTes
         // given
         GroupCreateRequest groupCreateRequest = GroupMockGenerator.generateMockGroupCreateRequest();
         ActiveUser groupAdmin = ActiveUserMockGenerator.generateMockActiveUser();
+        String password = groupAdmin.getPassword();
+        groupAdmin.setPassword(passwordEncoder.encode(groupAdmin.getPassword()));
         ActiveUser savedGroupAdmin = userDao.save(groupAdmin);
-        String token = this.loginUserAndGetValidToken(savedGroupAdmin);
+        String token = this.loginUserAndGetValidToken(savedGroupAdmin, password);
         String createGroupEndpoint = "/api/group";
         String groupCreateRequestJSON = objectMapper.writeValueAsString(groupCreateRequest);
         String authHeaderValue = String.format("Bearer %s", token);
@@ -136,8 +142,10 @@ public class GroupControllerIntegrationTest extends BaseControllerIntegrationTes
         GroupCreateRequest groupCreateRequest = GroupMockGenerator.generateMockGroupCreateRequest();
         this.addGroupWithName(groupCreateRequest.getGroupName());
         ActiveUser groupAdmin = ActiveUserMockGenerator.generateMockActiveUser();
+        String password = groupAdmin.getPassword();
+        groupAdmin.setPassword(passwordEncoder.encode(groupAdmin.getPassword()));
         ActiveUser savedGroupAdmin = userDao.save(groupAdmin);
-        String token = this.loginUserAndGetValidToken(savedGroupAdmin);
+        String token = this.loginUserAndGetValidToken(savedGroupAdmin, password);
         String createGroupEndpoint = "/api/group";
         String groupCreateRequestJSON = objectMapper.writeValueAsString(groupCreateRequest);
         String authHeaderValue = String.format("Bearer %s", token);
@@ -167,15 +175,18 @@ public class GroupControllerIntegrationTest extends BaseControllerIntegrationTes
         // given
         ActiveUser userToInvite = ActiveUserMockGenerator.generateMockActiveUser();
         Group group = GroupMockGenerator.generateMockGroup();
+        userToInvite.setPassword(passwordEncoder.encode(userToInvite.getPassword()));
         ActiveUser savedUserToInvite = userDao.save(userToInvite);
         Group savedGroup = groupDao.save(group);
         ActiveUser groupAdmin = ActiveUserMockGenerator.generateMockActiveUser();
+        String password = groupAdmin.getPassword();
+        groupAdmin.setPassword(passwordEncoder.encode(groupAdmin.getPassword()));
         ActiveUser savedGroupAdmin = userDao.save(groupAdmin);
         UserType adminType = userTypeDao.getByName(UserTypeName.ADMIN).get();
         GroupMember adminMember = GroupMockGenerator.generateMockGroupMember(savedGroupAdmin.getId(), adminType.getId(), savedGroup.getId());
         groupMemberDao.save(adminMember);
 
-        String token = this.loginUserAndGetValidToken(savedGroupAdmin);
+        String token = this.loginUserAndGetValidToken(savedGroupAdmin, password);
         String authHeader = String.format("Bearer %s", token);
         String inviteEndpoint = "/api/group/invite";
         GroupInviteRequest groupInviteRequest = GroupMockGenerator.generateMockGroupInviteRequest(group.getUid(), userToInvite.getUid());
@@ -201,10 +212,14 @@ public class GroupControllerIntegrationTest extends BaseControllerIntegrationTes
     public void testInviteUserToGroup_whenUserAlreadyIsInGroup() throws Exception {
         // given
         ActiveUser userToInvite = ActiveUserMockGenerator.generateMockActiveUser();
+        userToInvite.setPassword(passwordEncoder.encode(userToInvite.getPassword()));
         Group group = GroupMockGenerator.generateMockGroup();
+
         ActiveUser savedUserToInvite = userDao.save(userToInvite);
         Group savedGroup = groupDao.save(group);
         ActiveUser groupAdmin = ActiveUserMockGenerator.generateMockActiveUser();
+        String password = groupAdmin.getPassword();
+        groupAdmin.setPassword(passwordEncoder.encode(groupAdmin.getPassword()));
         ActiveUser savedGroupAdmin = userDao.save(groupAdmin);
         UserType adminType = userTypeDao.getByName(UserTypeName.ADMIN).get();
         GroupMember adminMember = GroupMockGenerator.generateMockGroupMember(savedGroupAdmin.getId(), adminType.getId(), savedGroup.getId());
@@ -213,7 +228,7 @@ public class GroupControllerIntegrationTest extends BaseControllerIntegrationTes
         GroupMember userToInviteMember = GroupMockGenerator.generateMockGroupMember(savedUserToInvite.getId(), regularUserType.getId(), savedGroup.getId());
         groupMemberDao.save(userToInviteMember);
 
-        String token = this.loginUserAndGetValidToken(savedGroupAdmin);
+        String token = this.loginUserAndGetValidToken(savedGroupAdmin, password);
         String authHeader = String.format("Bearer %s", token);
         String inviteEndpoint = "/api/group/invite";
         GroupInviteRequest groupInviteRequest = GroupMockGenerator.generateMockGroupInviteRequest(group.getUid(), userToInvite.getUid());
@@ -241,16 +256,19 @@ public class GroupControllerIntegrationTest extends BaseControllerIntegrationTes
     public void testInviteUserToGroup_whenClientIsNotAdminType() throws Exception {
         // given
         ActiveUser userToInvite = ActiveUserMockGenerator.generateMockActiveUser();
+        userToInvite.setPassword(passwordEncoder.encode(userToInvite.getPassword()));
         Group group = GroupMockGenerator.generateMockGroup();
         userDao.save(userToInvite);
         Group savedGroup = groupDao.save(group);
         ActiveUser client = ActiveUserMockGenerator.generateMockActiveUser();
+        String password = client.getPassword();
+        client.setPassword(passwordEncoder.encode(client.getPassword()));
         ActiveUser savedClient = userDao.save(client);
         UserType regularUserType = userTypeDao.getByName(UserTypeName.REGULAR_USER).get();
         GroupMember clientGroupMember = GroupMockGenerator.generateMockGroupMember(savedClient.getId(), regularUserType.getId(), savedGroup.getId());
         groupMemberDao.save(clientGroupMember);
 
-        String token = this.loginUserAndGetValidToken(savedClient);
+        String token = this.loginUserAndGetValidToken(savedClient, password);
         String authHeader = String.format("Bearer %s", token);
         String inviteEndpoint = "/api/group/invite";
         GroupInviteRequest groupInviteRequest = GroupMockGenerator.generateMockGroupInviteRequest(group.getUid(), userToInvite.getUid());
@@ -270,8 +288,10 @@ public class GroupControllerIntegrationTest extends BaseControllerIntegrationTes
     public void testGetGroupLoginInfo() throws Exception {
         // given
         ActiveUser user = ActiveUserMockGenerator.generateMockActiveUser();
+        String password = user.getPassword();
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
         ActiveUser savedUser = userDao.save(user);
-        String userToken = this.loginUserAndGetValidToken(savedUser);
+        String userToken = this.loginUserAndGetValidToken(savedUser, password);
         Group group = GroupMockGenerator.generateMockGroup();
         Group savedGroup = groupDao.save(group);
         UserType userType = ActiveUserMockGenerator.generateMockUserType(userTypeDao.getAll());
@@ -315,10 +335,10 @@ public class GroupControllerIntegrationTest extends BaseControllerIntegrationTes
         groupDao.save(group);
     }
 
-    private String loginUserAndGetValidToken(ActiveUser user) throws Exception {
+    private String loginUserAndGetValidToken(ActiveUser user, String password) throws Exception {
         ActiveUserProfile userProfile = ActiveUserMockGenerator.generateMockActiveUserProfile(user.getId());
         userProfileDao.save(userProfile);
-        LoginRequest loginRequest = ActiveUserMockGenerator.generateMockLoginRequest(user.getUsername(), user.getPassword());
+        LoginRequest loginRequest = ActiveUserMockGenerator.generateMockLoginRequest(user.getUsername(), password);
         String loginRequestJSON = objectMapper.writeValueAsString(loginRequest);
         String loginEndpoint = "/api/user/login";
 

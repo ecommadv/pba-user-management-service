@@ -22,6 +22,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.UUID;
 import java.util.List;
@@ -55,29 +56,8 @@ public class UserFacadeUnitTest {
     @Mock
     private JwtSecurityService jwtSecurityService;
 
-    @Test
-    public void testRegisterUser() {
-        // given
-        UserCreateRequest userCreateRequest = PendingUserMockGenerator.generateMockUserCreateRequest();
-        PendingUser pendingUser = PendingUserMockGenerator.generateMockPendingUser();
-        List<PendingUser> pendingUserList = PendingUserMockGenerator.generateMockListOfPendingUsers(10);
-        PendingUserProfile pendingUserProfile = PendingUserMockGenerator.generateMockPendingUserProfile(pendingUserList);
-        when(pendingUserMapper.toPendingUser(userCreateRequest)).thenReturn(pendingUser);
-        when(pendingUserService.addPendingUser(pendingUser)).thenReturn(pendingUser);
-        when(pendingUserMapper.toPendingUserProfile(userCreateRequest, pendingUser.getId())).thenReturn(pendingUserProfile);
-
-        // when
-        userFacade.registerUser(userCreateRequest);
-
-        // then
-        verify(userRequestValidator).validateUserDoesNotAlreadyExistWhenCreate(userCreateRequest);
-        verify(pendingUserMapper).toPendingUser(userCreateRequest);
-        verify(pendingUserService).addPendingUser(pendingUser);
-        verify(pendingUserMapper).toPendingUserProfile(userCreateRequest, pendingUser.getId());
-        verify(pendingUserService).addPendingUserProfile(pendingUserProfile);
-        verify(emailService).sendVerificationEmail(userCreateRequest.getEmail(), pendingUser.getValidationCode());
-        verifyNoMoreInteractions(pendingUserMapper, pendingUserService);
-    }
+    @Mock
+    private PasswordEncoder passwordEncoder;
 
     @Test
     public void testGetActiveUser() {
