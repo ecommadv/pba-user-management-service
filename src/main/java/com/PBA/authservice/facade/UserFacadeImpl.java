@@ -1,23 +1,18 @@
 package com.pba.authservice.facade;
 
-import com.pba.authservice.controller.request.LoginRequest;
-import com.pba.authservice.controller.request.UserUpdateRequest;
+import com.pba.authservice.controller.request.*;
 import com.pba.authservice.exceptions.ErrorCodes;
 import com.pba.authservice.exceptions.EntityNotFoundException;
 import com.pba.authservice.mapper.ActiveUserMapper;
 import com.pba.authservice.mapper.PendingUserMapper;
-import com.pba.authservice.persistance.model.ActiveUser;
-import com.pba.authservice.persistance.model.ActiveUserProfile;
-import com.pba.authservice.persistance.model.PendingUser;
-import com.pba.authservice.persistance.model.PendingUserProfile;
+import com.pba.authservice.persistance.model.*;
 import com.pba.authservice.persistance.model.dtos.UserDto;
 import com.pba.authservice.persistance.model.dtos.UserProfileDto;
 import com.pba.authservice.security.JwtSecurityService;
-import com.pba.authservice.security.JwtUtils;
 import com.pba.authservice.service.*;
-import com.pba.authservice.controller.request.UserCreateRequest;
 import com.pba.authservice.validator.UserRequestValidator;
 import org.springframework.data.util.Pair;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,6 +27,7 @@ public class UserFacadeImpl implements UserFacade {
     private final EmailService emailService;
     private final UserRequestValidator userRequestValidator;
     private final JwtSecurityService jwtSecurityService;
+    private final PasswordEncoder passwordEncoder;
 
     public UserFacadeImpl(PendingUserService pendingUserService,
                           PendingUserMapper pendingUserMapper,
@@ -39,7 +35,7 @@ public class UserFacadeImpl implements UserFacade {
                           ActiveUserMapper activeUserMapper,
                           EmailService emailService,
                           UserRequestValidator userRequestValidator,
-                          JwtSecurityService jwtSecurityService) {
+                          JwtSecurityService jwtSecurityService, PasswordEncoder passwordEncoder) {
         this.pendingUserService = pendingUserService;
         this.pendingUserMapper = pendingUserMapper;
         this.activeUserService = activeUserService;
@@ -47,13 +43,14 @@ public class UserFacadeImpl implements UserFacade {
         this.emailService = emailService;
         this.userRequestValidator = userRequestValidator;
         this.jwtSecurityService = jwtSecurityService;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Override
     @Transactional
     public void registerUser(UserCreateRequest userCreateRequest) {
         userRequestValidator.validateUserDoesNotAlreadyExistWhenCreate(userCreateRequest);
-        PendingUser pendingUser = pendingUserMapper.toPendingUser(userCreateRequest);
+        PendingUser pendingUser = pendingUserMapper.toPendingUser(userCreateRequest, passwordEncoder);
         PendingUser savedPendingUser = pendingUserService.addPendingUser(pendingUser);
 
         PendingUserProfile pendingUserProfile = pendingUserMapper.toPendingUserProfile(userCreateRequest, savedPendingUser.getId());
@@ -106,8 +103,29 @@ public class UserFacadeImpl implements UserFacade {
 
     @Override
     public String loginUser(LoginRequest loginRequest) {
-        ActiveUser user = activeUserService.findByUsernameAndPassword(loginRequest.getUsername(), loginRequest.getPassword());
+        ActiveUser user = activeUserService.findByUsernameAndPassword(loginRequest.getUsername(), loginRequest.getPassword(), passwordEncoder);
         return jwtSecurityService.generateAccessToken(user);
+    }
+
+    @Override
+    @Transactional
+    public void forgotPassword(ForgotPasswordRequest forgotPasswordRequest) {
+        String email = forgotPasswordRequest.getEmail();
+        UUID token = UUID.randomUUID();
+        ActiveUser user = activeUserService.getUserByEmail(email);
+        PasswordToken passwordToken = activeUserMapper.toPasswordToken(token, user);
+        activeUserService.addPasswordToken(passwordToken);
+        emailService.sendForgotPasswordEmail(email, passwordToken);
+    }
+
+    @Override
+    @Transactional
+    public void changePassword(UUID token, ChangePasswordRequest changePasswordRequest) {
+        ActiveUser user = activeUserService.getUserByPasswordToken(token);
+        String newPassword = changePasswordRequest.getNewPassword();
+        user.setPassword(passwordEncoder.encode(newPassword));
+        activeUserService.updateUser(user);
+        activeUserService.deletePasswordToken(token);
     }
 
     private void deletePendingUser(PendingUser pendingUser, PendingUserProfile pendingUserProfile) {
